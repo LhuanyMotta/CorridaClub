@@ -1,0 +1,50 @@
+﻿@page "/eventos"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject EventoController EventoController
+
+<h3>Lista de Eventos</h3>
+
+@if (eventos == null)
+{
+    <p>Carregando eventos...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Data</th>
+                <th>Local</th>
+                <th>Distância</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var evento in eventos)
+            {
+                <tr>
+                    <td>@evento.Nome</td>
+                    <td>@evento.Data?.ToString("dd/MM/yyyy")</td>
+                    <td>@evento.Local</td>
+                    <td>@evento.Distancia km</td>
+                    <td>
+                        <a href="/eventos/detalhes/@evento.Id" class="btn btn-info btn-sm">Detalhes</a>
+                        <a href="/eventos/editar/@evento.Id" class="btn btn-warning btn-sm">Editar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a href="/eventos/criar" class="btn btn-primary">Novo Evento</a>
+}
+
+@code {
+    private List<Evento> eventos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        eventos = await EventoController.ListarProximosEventos();
+    }
+}

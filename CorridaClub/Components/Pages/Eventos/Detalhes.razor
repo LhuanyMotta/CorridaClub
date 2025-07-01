@@ -1,0 +1,58 @@
+﻿@page "/eventos/detalhes/{id:int}"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject EventoController EventoController
+
+<h3>Detalhes do Evento</h3>
+
+@if (evento == null)
+{
+    <p>Carregando evento...</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@evento.Nome</h5>
+            <p class="card-text"><strong>Data:</strong> @evento.Data?.ToString("dd/MM/yyyy HH:mm")</p>
+            <p class="card-text"><strong>Local:</strong> @evento.Local</p>
+            <p class="card-text"><strong>Distância:</strong> @evento.Distancia km</p>
+            <p class="card-text"><strong>Tipo:</strong> @evento.Tipo</p>
+            <p class="card-text"><strong>Descrição:</strong> @evento.Descricao</p>
+
+            <h5 class="mt-4">Inscrições (@evento.Inscricoes?.Count)</h5>
+            <a href="/inscricoes/criar?eventoId=@evento.Id" class="btn btn-success mb-3">Nova Inscrição</a>
+
+            @if (evento.Inscricoes?.Any() ?? false)
+            {
+                <ul class="list-group">
+                    @foreach (var inscricao in evento.Inscricoes)
+                    {
+                        <li class="list-group-item">
+                            @inscricao.Usuario?.Nome - @inscricao.TamanhoCamiseta (@inscricao.Status)
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Nenhuma inscrição encontrada.</p>
+            }
+
+            <a href="/eventos/editar/@evento.Id" class="btn btn-warning mt-3">Editar</a>
+            <a href="/eventos" class="btn btn-secondary mt-3">Voltar</a>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Evento evento = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        evento = await EventoController.ObterPorId(Id) ?? new Evento();
+    }
+}

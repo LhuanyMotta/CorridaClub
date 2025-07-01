@@ -1,0 +1,47 @@
+﻿@page "/eventos/editar/{id:int}"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject EventoController EventoController
+@inject NavigationManager Navigation
+
+<h3>Editar Evento</h3>
+
+@if (evento == null)
+{
+    <p>Carregando evento...</p>
+}
+else
+{
+    <EditForm Model="@evento" OnValidSubmit="@AtualizarEvento">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="nome">Nome do Evento:</label>
+            <InputText id="nome" class="form-control" @bind-Value="evento.Nome" />
+        </div>
+
+        <!-- Outros campos do evento (igual ao Criar.razor) -->
+
+        <button type="submit" class="btn btn-primary">Atualizar</button>
+        <a href="/eventos" class="btn btn-secondary">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Evento evento = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        evento = await EventoController.ObterPorId(Id) ?? new Evento();
+    }
+
+    private async Task AtualizarEvento()
+    {
+        // Implementar lógica de atualização no controller
+        Navigation.NavigateTo("/eventos");
+    }
+}
