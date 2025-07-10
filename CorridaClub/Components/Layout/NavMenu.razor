@@ -1,0 +1,113 @@
+﻿@using CorridaClub.Components.Account
+@using CorridaClub.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SignInManager<CorridaClubUser> SignInManager
+@inject NavigationManager Navigation
+@inject IdentityRedirectManager RedirectManager
+@inject UserManager<CorridaClubUser> UserManager
+
+<div class="sidebar">
+    <div class="top-row pl-4 navbar navbar-dark">
+        <a class="navbar-brand" href="">CorridaClub</a>
+        <button class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+
+    <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> Home
+                </NavLink>
+            </li>
+
+            <AuthorizeView>
+                <Authorized>
+                    <li class="nav-item px-3">
+                        <span class="nav-link disabled">Olá, @UserDisplayName</span>
+                    </li>
+
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="eventos">
+                            <span class="oi oi-calendar" aria-hidden="true"></span> Eventos
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="minhas-inscricoes">
+                            <span class="oi oi-clipboard" aria-hidden="true"></span> Minhas Inscrições
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="perfil">
+                            <span class="oi oi-person" aria-hidden="true"></span> Meu Perfil
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <button class="nav-link btn btn-link" @onclick="Logout">
+                            <span class="oi oi-account-logout" aria-hidden="true"></span> Sair
+                        </button>
+                    </li>
+                </Authorized>
+                <NotAuthorized>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="register">
+                            <span class="oi oi-plus" aria-hidden="true"></span> Registrar
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="login">
+                            <span class="oi oi-account-login" aria-hidden="true"></span> Login
+                        </NavLink>
+                    </li>
+                </NotAuthorized>
+            </AuthorizeView>
+
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="usuarios">
+                            <span class="oi oi-people" aria-hidden="true"></span> Usuários
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="pedidos">
+                            <span class="oi oi-cart" aria-hidden="true"></span> Pedidos
+                        </NavLink>
+                    </li>
+                </Authorized>
+            </AuthorizeView>
+        </ul>
+    </div>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string? UserDisplayName = "Usuário";
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task Logout()
+    {
+        await SignInManager.SignOutAsync();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userEntity = await UserManager.GetUserAsync(user);
+            UserDisplayName = userEntity?.UserName ?? user.Identity.Name ?? "Usuário";
+        }
+    }
+}

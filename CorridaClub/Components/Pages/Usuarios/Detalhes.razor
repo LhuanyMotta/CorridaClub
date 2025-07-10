@@ -1,0 +1,52 @@
+﻿@page "/usuarios/detalhes/{id:int}"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject UsuarioController UsuarioController
+
+<h3>Detalhes do Usuário</h3>
+
+@if (usuario == null)
+{
+    <p>Carregando usuário...</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@usuario.Nome</h5>
+            <p class="card-text"><strong>Email:</strong> @usuario.Email</p>
+            <p class="card-text"><strong>Telefone:</strong> @usuario.Telefone</p>
+            <p class="card-text"><strong>Tipo:</strong> @usuario.TipoMembro</p>
+
+            <h5 class="mt-4">Inscrições</h5>
+            @if (usuario.Inscricoes?.Any() ?? false)
+            {
+                <ul>
+                    @foreach (var inscricao in usuario.Inscricoes)
+                    {
+                        <li>@inscricao.Evento?.Nome - @inscricao.Status</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Nenhuma inscrição encontrada.</p>
+            }
+
+            <a href="/usuarios/editar/@usuario.Id" class="btn btn-warning">Editar</a>
+            <a href="/usuarios" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Usuario usuario = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await UsuarioController.ObterPorId(Id) ?? new Usuario();
+    }
+}

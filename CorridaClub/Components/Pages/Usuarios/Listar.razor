@@ -1,0 +1,56 @@
+﻿@page "/usuarios"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject UsuarioController UsuarioController
+@inject NavigationManager Navigation
+
+<h3>Lista de Usuários</h3>
+
+@if (usuarios == null)
+{
+    <p>Carregando usuários...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Tipo</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var usuario in usuarios)
+            {
+                <tr>
+                    <td>@usuario.Nome</td>
+                    <td>@usuario.Email</td>
+                    <td>@usuario.TipoMembro</td>
+                    <td>
+                        <a href="/usuarios/detalhes/@usuario.Id" class="btn btn-info btn-sm">Detalhes</a>
+                        <a href="/usuarios/editar/@usuario.Id" class="btn btn-warning btn-sm">Editar</a>
+                        <button @onclick="@(() => RemoverUsuario(usuario.Id))" class="btn btn-danger btn-sm">Remover</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a href="/usuarios/criar" class="btn btn-primary">Novo Usuário</a>
+}
+
+@code {
+    private List<Usuario> usuarios = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuarios = await UsuarioController.ListarUsuarios();
+    }
+
+    private async Task RemoverUsuario(int id)
+    {
+        await UsuarioController.Remover(id);
+        usuarios = await UsuarioController.ListarUsuarios();
+    }
+}

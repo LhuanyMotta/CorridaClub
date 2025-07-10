@@ -1,0 +1,66 @@
+﻿@page "/pedidos/detalhes/{id:int}"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject PedidoController PedidoController
+@inject NavigationManager Navigation
+
+<h3>Detalhes do Pedido</h3>
+
+@if (pedido == null)
+{
+    <p>Carregando pedido...</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Pedido #@pedido.Id</h5>
+            <p class="card-text"><strong>Cliente:</strong> @pedido.Usuario?.Nome</p>
+            <p class="card-text"><strong>Item:</strong> @pedido.Item (@pedido.Tamanho)</p>
+            <p class="card-text"><strong>Quantidade:</strong> @pedido.Quantidade</p>
+            <p class="card-text"><strong>Status:</strong> @pedido.Status</p>
+            <p class="card-text"><strong>Data Pedido:</strong> @pedido.DataPedido?.ToString("dd/MM/yyyy")</p>
+
+            <div class="mt-3">
+                <h5>Alterar Status</h5>
+                <select class="form-control mb-2" @bind="novoStatus">
+                    <option value="Pendente">Pendente</option>
+                    <option value="Processando">Processando</option>
+                    <option value="Enviado">Enviado</option>
+                    <option value="Entregue">Entregue</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+                <button @onclick="(() => AtualizarStatus(pedido.Id))"
+                        class="btn btn-primary">
+                    Atualizar Status
+                </button>
+            </div>
+
+            <a href="/pedidos" class="btn btn-secondary mt-3">Voltar</a>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Pedido? pedido;
+    private string novoStatus = "Pendente";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var pedidos = await PedidoController.ListarPedidosPorUsuario(0);
+        pedido = pedidos.FirstOrDefault(p => p.Id == Id);
+        if (pedido != null)
+        {
+            novoStatus = pedido.Status;
+        }
+    }
+
+    private async Task AtualizarStatus(int pedidoId)
+    {
+        await PedidoController.AtualizarStatusPedido(pedidoId, novoStatus);
+        Navigation.NavigateTo($"/pedidos/detalhes/{pedidoId}", forceLoad: true);
+    }
+}

@@ -1,0 +1,52 @@
+﻿@page "/pedidos"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject PedidoController PedidoController
+@inject UsuarioController UsuarioController
+
+<h3>Lista de Pedidos</h3>
+
+@if (pedidos == null)
+{
+    <p>Carregando pedidos...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Cliente</th>
+                <th>Quantidade</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pedido in pedidos)
+            {
+                <tr>
+                    <td>@pedido.Item</td>
+                    <td>@(pedido.Usuario?.Nome ?? "N/A")</td>
+                    <td>@pedido.Quantidade</td>
+                    <td>@pedido.Status</td>
+                    <td>@pedido.DataPedido?.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <a href="/pedidos/detalhes/@pedido.Id" class="btn btn-info btn-sm">Detalhes</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a href="/pedidos/criar" class="btn btn-primary">Novo Pedido</a>
+}
+
+@code {
+    private List<Pedido> pedidos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        pedidos = await PedidoController.ListarPedidosPorUsuario(0); // 0 para todos
+    }
+}
