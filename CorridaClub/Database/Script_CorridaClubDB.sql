@@ -15,6 +15,8 @@ CREATE TABLE usuario (
     tipo_membro VARCHAR(20)
 );
 
+SELECT * FROM usuario;
+
 -- Tabela de eventos
 CREATE TABLE evento (
     id INT PRIMARY KEY AUTO_INCREMENT,

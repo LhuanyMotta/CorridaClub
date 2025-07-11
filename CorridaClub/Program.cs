@@ -9,10 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Configuração do DbContext
+// Configuraï¿½ï¿½o do DbContext
 var connectionString = builder.Configuration.GetConnectionString("BaseConexaoMySql");
+
 builder.Services.AddDbContext<ContextoBD>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+{
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+           .LogTo(Console.WriteLine, LogLevel.Information)
+           .EnableSensitiveDataLogging();
+});
 
 // Register controllers
 builder.Services.AddScoped<UsuarioController>();

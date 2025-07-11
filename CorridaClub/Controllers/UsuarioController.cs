@@ -16,8 +16,20 @@ namespace CorridaClub.Controllers
 
         public async Task Adicionar(Usuario usuario)
         {
-            await _context.Usuarios.AddAsync(usuario);
-            await _context.SaveChangesAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                await _context.Usuarios.AddAsync(usuario);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                Console.WriteLine($"Usuário inserido com ID: {usuario.Id}"); // Log para verificação
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine($"ERRO: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<List<Usuario>> ListarUsuarios()

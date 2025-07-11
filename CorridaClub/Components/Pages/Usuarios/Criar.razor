@@ -1,50 +1,144 @@
 ﻿@page "/usuarios/criar"
+@rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
 @inject UsuarioController UsuarioController
 @inject NavigationManager Navigation
 
-<h3>Criar Novo Usuário</h3>
+<div class="container">
+    <h1 class="my-4 text-primary text-center"><i class="fas fa-user-plus mr-2"></i> CADASTRAR NOVO USUÁRIO</h1>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Nome:</label>
+                        <input @bind="novoUsuario.Nome" class="form-control" disabled="@campoBloqueado" 
+                               placeholder="Digite o nome completo" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Email:</label>
+                        <input @bind="novoUsuario.Email" class="form-control" disabled="@campoBloqueado" 
+                               placeholder="Digite o email" />
+                    </div>
+                </div>
+            </div>
 
-<EditForm Model="@novoUsuario" OnValidSubmit="@SalvarUsuario">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Senha:</label>
+                        <input @bind="novoUsuario.Senha" type="password" class="form-control" disabled="@campoBloqueado" 
+                               placeholder="Digite a senha" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Telefone:</label>
+                        <input @bind="novoUsuario.Telefone" class="form-control" disabled="@campoBloqueado" 
+                               placeholder="Digite o telefone" />
+                    </div>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="nome">Nome:</label>
-        <InputText id="nome" class="form-control" @bind-Value="novoUsuario.Nome" />
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Data de Nascimento:</label>
+                        <input @bind="novoUsuario.DataNascimento" type="date" class="form-control" disabled="@campoBloqueado" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Gênero:</label>
+                        <select @bind="novoUsuario.Genero" class="form-control" disabled="@campoBloqueado">
+                            <option value="">Selecione...</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Tipo de Membro:</label>
+                        <select @bind="novoUsuario.TipoMembro" class="form-control" disabled="@campoBloqueado">
+                            <option value="">Selecione...</option>
+                            <option value="Atleta">Atleta</option>
+                            <option value="Organizador">Organizador</option>
+                            <option value="Admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex">
+                @if (!cadastroSucesso)
+                {
+                    <button class="btn btn-primary mr-2" @onclick="SalvarUsuario">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <a href="/usuarios" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                }
+                else
+                {
+                    <div class="alert alert-success d-flex align-items-center w-100" role="alert">
+                        <i class="fas fa-check-circle fa-2x mr-3"></i>
+                        <div>
+                            <h4 class="alert-heading">Sucesso!</h4>
+                            <p class="mb-0">Usuário cadastrado com sucesso.</p>
+                        </div>
+                    </div>
+                    <a href="/usuarios" class="btn btn-success ml-auto">
+                        <i class="fas fa-list"></i> Ver Usuários
+                    </a>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensagemErro))
+            {
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+                </div>
+            }
+        </div>
     </div>
-
-    <div class="form-group">
-        <label for="email">Email:</label>
-        <InputText id="email" class="form-control" @bind-Value="novoUsuario.Email" />
-    </div>
-
-    <div class="form-group">
-        <label for="senha">Senha:</label>
-        <InputText type="password" id="senha" class="form-control" @bind-Value="novoUsuario.Senha" />
-    </div>
-
-    <div class="form-group">
-        <label for="tipo">Tipo de Membro:</label>
-        <InputSelect id="tipo" class="form-control" @bind-Value="novoUsuario.TipoMembro">
-            <option value="">Selecione...</option>
-            <option value="Atleta">Atleta</option>
-            <option value="Organizador">Organizador</option>
-            <option value="Admin">Administrador</option>
-        </InputSelect>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <a href="/usuarios" class="btn btn-secondary">Cancelar</a>
-</EditForm>
+</div>
 
 @code {
-    private Usuario novoUsuario = new();
+    private Usuario novoUsuario = new Usuario();
+    private bool cadastroSucesso = false;
+    private bool campoBloqueado = false;
+    private string mensagemErro = string.Empty;
 
     private async Task SalvarUsuario()
     {
-        await UsuarioController.Adicionar(novoUsuario);
-        Navigation.NavigateTo("/usuarios");
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(novoUsuario.Nome))
+            {
+                await UsuarioController.Adicionar(novoUsuario);
+                cadastroSucesso = true;
+                campoBloqueado = true;
+                mensagemErro = string.Empty;
+            }
+            else
+            {
+                mensagemErro = "O nome do usuário é obrigatório.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao salvar usuário: {ex.Message}";
+            Console.WriteLine(mensagemErro); // Log no console
+        }
     }
 }
