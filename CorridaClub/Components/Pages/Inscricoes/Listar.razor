@@ -1,0 +1,58 @@
+﻿@page "/inscricoes"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject InscricaoController InscricaoController
+@inject EventoController EventoController
+
+<h3>Lista de Inscrições</h3>
+
+@if (inscricoes == null)
+{
+    <p>Carregando inscrições...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Evento</th>
+                <th>Participante</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inscricao in inscricoes)
+            {
+                <tr>
+                    <td>@(inscricao.Evento?.Nome ?? "N/A")</td>
+                    <td>@(inscricao.Usuario?.Nome ?? "N/A")</td>
+                    <td>@inscricao.DataInscricao?.ToString("dd/MM/yyyy")</td>
+                    <td>@inscricao.Status</td>
+                    <td>
+                        <a href="/inscricoes/detalhes/@inscricao.Id" class="btn btn-info btn-sm">Detalhes</a>
+                        <button @onclick="@(() => CancelarInscricao(inscricao.Id))" class="btn btn-danger btn-sm">Cancelar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a href="/inscricoes/criar" class="btn btn-primary">Nova Inscrição</a>
+}
+
+@code {
+    private List<Inscricao> inscricoes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Carrega todas as inscrições
+        inscricoes = await InscricaoController.ListarInscricoesPorEvento(0); // 0 para todos
+    }
+
+    private async Task CancelarInscricao(int id)
+    {
+        await InscricaoController.CancelarInscricao(id);
+        inscricoes = await InscricaoController.ListarInscricoesPorEvento(0);
+    }
+}

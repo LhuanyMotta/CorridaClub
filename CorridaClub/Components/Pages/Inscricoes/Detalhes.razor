@@ -1,0 +1,52 @@
+﻿@page "/inscricoes/detalhes/{id:int}"
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject InscricaoController InscricaoController
+@inject NavigationManager Navigation
+
+<h3>Detalhes da Inscrição</h3>
+
+@if (inscricao == null)
+{
+    <p>Carregando inscrição...</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Inscrição #@inscricao.Id</h5>
+            <p class="card-text"><strong>Evento:</strong> @inscricao.Evento?.Nome</p>
+            <p class="card-text"><strong>Participante:</strong> @inscricao.Usuario?.Nome</p>
+            <p class="card-text"><strong>Data Inscrição:</strong> @inscricao.DataInscricao?.ToString("dd/MM/yyyy")</p>
+            <p class="card-text"><strong>Status:</strong> @inscricao.Status</p>
+            <p class="card-text"><strong>Número Peito:</strong> @inscricao.NumeroPeito</p>
+            <p class="card-text"><strong>Camiseta:</strong> @inscricao.TamanhoCamiseta</p>
+            
+            <button @onclick="(() => CancelarInscricao(inscricao.Id))" 
+                    class="btn btn-danger"
+                    disabled="@(inscricao.Status == "Cancelada")">
+                Cancelar Inscrição
+            </button>
+            <a href="/inscricoes" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Inscricao? inscricao;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var inscricoes = await InscricaoController.ListarInscricoesPorEvento(0);
+        inscricao = inscricoes.FirstOrDefault(i => i.Id == Id);
+    }
+
+    private async Task CancelarInscricao(int id)
+    {
+        await InscricaoController.CancelarInscricao(id);
+        Navigation.NavigateTo("/inscricoes", forceLoad: true);
+    }
+}
