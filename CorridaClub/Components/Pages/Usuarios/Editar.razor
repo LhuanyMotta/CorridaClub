@@ -1,59 +1,327 @@
 ﻿@page "/usuarios/editar/{id:int}"
+@rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
 @inject UsuarioController UsuarioController
 @inject NavigationManager Navigation
+@implements IDisposable
 
-<h3>Editar Usuário</h3>
+<div class="container">
+    <h1 class="my-4 text-primary text-center"><i class="fas fa-user-edit mr-2"></i> EDITAR USUÁRIO</h1>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            @if (usuario == null)
+            {
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                    <p class="mt-2">Carregando usuário...</p>
+                </div>
+            }
+            else
+            {
+                <!-- Mensagem de erro geral -->
+                @if (!string.IsNullOrEmpty(mensagemErro))
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+                    </div>
+                }
 
-@if (usuario == null)
-{
-    <p>Carregando usuário...</p>
-}
-else
-{
-    <EditForm Model="@usuario" OnValidSubmit="@AtualizarUsuario">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Nome:</label>
+                            <input @bind="usuario.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")" 
+                                   placeholder="Digite o nome completo" />
+                            @if (erros.ContainsKey("Nome"))
+                            {
+                                <div class="invalid-feedback">@erros["Nome"]</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Email:</label>
+                            <input @bind="usuario.Email" class="form-control @(erros.ContainsKey("Email") ? "is-invalid" : "")" 
+                                   placeholder="Digite o email" />
+                            @if (erros.ContainsKey("Email"))
+                            {
+                                <div class="invalid-feedback">@erros["Email"]</div>
+                            }
+                        </div>
+                    </div>
+                </div>
 
-        <div class="form-group">
-            <label for="nome">Nome:</label>
-            <InputText id="nome" class="form-control" @bind-Value="usuario.Nome" />
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Telefone:</label>
+                            <input @bind="usuario.Telefone" @oninput="FormatarTelefone" 
+                                   class="form-control @(erros.ContainsKey("Telefone") ? "is-invalid" : "")" 
+                                   placeholder="(00) 00000-0000" />
+                            @if (erros.ContainsKey("Telefone"))
+                            {
+                                <div class="invalid-feedback">@erros["Telefone"]</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Data de Nascimento:</label>
+                            <input @bind="usuario.DataNascimento" type="date" 
+                                   class="form-control @(erros.ContainsKey("DataNascimento") ? "is-invalid" : "")" 
+                                   max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            @if (erros.ContainsKey("DataNascimento"))
+                            {
+                                <div class="invalid-feedback">@erros["DataNascimento"]</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Gênero:</label>
+                            <select @bind="usuario.Genero" class="form-control @(erros.ContainsKey("Genero") ? "is-invalid" : "")">
+                                <option value="">Selecione...</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Feminino">Feminino</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                            @if (erros.ContainsKey("Genero"))
+                            {
+                                <div class="invalid-feedback">@erros["Genero"]</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tipo de Membro:</label>
+                            <select @bind="usuario.TipoMembro" class="form-control @(erros.ContainsKey("TipoMembro") ? "is-invalid" : "")">
+                                <option value="">Selecione...</option>
+                                <option value="Atleta">Atleta</option>
+                                <option value="Organizador">Organizador</option>
+                                <option value="Admin">Administrador</option>
+                            </select>
+                            @if (erros.ContainsKey("TipoMembro"))
+                            {
+                                <div class="invalid-feedback">@erros["TipoMembro"]</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Senha (deixe em branco para manter a atual):</label>
+                            <input @bind="novaSenha" type="password" 
+                                   class="form-control @(erros.ContainsKey("Senha") ? "is-invalid" : "")" 
+                                   placeholder="Digite a nova senha" />
+                            @if (erros.ContainsKey("Senha"))
+                            {
+                                <div class="invalid-feedback">@erros["Senha"]</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Confirmar Senha:</label>
+                            <input @bind="confirmacaoSenha" type="password" 
+                                   class="form-control @(erros.ContainsKey("ConfirmacaoSenha") ? "is-invalid" : "")" 
+                                   placeholder="Confirme a nova senha" />
+                            @if (erros.ContainsKey("ConfirmacaoSenha"))
+                            {
+                                <div class="invalid-feedback">@erros["ConfirmacaoSenha"]</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex">
+                    <button class="btn btn-primary mr-2" @onclick="AtualizarUsuario" disabled="@salvando">
+                        @if (salvando)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span class="ml-2">Atualizando...</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-save"></i> @(erros.Count > 0 ? "Corrija os erros" : "Atualizar")
+                        }
+                    </button>
+                    <a href="/usuarios" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            }
         </div>
-
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <InputText id="email" class="form-control" @bind-Value="usuario.Email" />
-        </div>
-
-        <div class="form-group">
-            <label for="tipo">Tipo de Membro:</label>
-            <InputSelect id="tipo" class="form-control" @bind-Value="usuario.TipoMembro">
-                <option value="Atleta">Atleta</option>
-                <option value="Organizador">Organizador</option>
-                <option value="Admin">Administrador</option>
-            </InputSelect>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Atualizar</button>
-        <a href="/usuarios" class="btn btn-secondary">Cancelar</a>
-    </EditForm>
-}
+    </div>
+</div>
 
 @code {
     [Parameter]
     public int Id { get; set; }
 
-    private Usuario usuario = new();
+    private Usuario usuario;
+    private string novaSenha = string.Empty;
+    private string confirmacaoSenha = string.Empty;
+    private bool salvando = false;
+    private string mensagemErro = string.Empty;
+    private Dictionary<string, string> erros = new Dictionary<string, string>();
+    private DotNetObjectReference<Editar>? objRef;
 
     protected override async Task OnInitializedAsync()
     {
-        usuario = await UsuarioController.ObterPorId(Id) ?? new Usuario();
+        try
+        {
+            usuario = await UsuarioController.ObterPorId(Id);
+            if (usuario == null)
+            {
+                mensagemErro = "Usuário não encontrado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao carregar usuário: {ex.Message}";
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        objRef = DotNetObjectReference.Create(this);
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
     }
 
     private async Task AtualizarUsuario()
     {
-        await UsuarioController.Atualizar(usuario);
-        Navigation.NavigateTo("/usuarios");
+        salvando = true;
+        erros.Clear();
+        mensagemErro = string.Empty;
+        
+        // Validações
+        ValidarCampos();
+
+        if (erros.Count == 0)
+        {
+            try
+            {
+                // Atualiza a senha apenas se foi informada uma nova
+                if (!string.IsNullOrWhiteSpace(novaSenha))
+                {
+                    usuario.Senha = novaSenha;
+                }
+
+                await UsuarioController.Atualizar(usuario);
+                Navigation.NavigateTo("/usuarios");
+            }
+            catch (Exception ex)
+            {
+                mensagemErro = $"Erro ao atualizar usuário: {ex.Message}";
+                Console.WriteLine(mensagemErro);
+            }
+        }
+        else
+        {
+            mensagemErro = "Corrija os erros antes de atualizar.";
+        }
+
+        salvando = false;
+        StateHasChanged();
+    }
+
+    private void ValidarCampos()
+    {
+        // Validação do Nome
+        if (string.IsNullOrWhiteSpace(usuario.Nome))
+        {
+            erros["Nome"] = "O nome é obrigatório.";
+        }
+        else if (usuario.Nome.Length < 3)
+        {
+            erros["Nome"] = "O nome deve ter pelo menos 3 caracteres.";
+        }
+
+        // Validação do Email
+        if (string.IsNullOrWhiteSpace(usuario.Email))
+        {
+            erros["Email"] = "O email é obrigatório.";
+        }
+        else if (!usuario.Email.Contains("@") || !usuario.Email.Contains("."))
+        {
+            erros["Email"] = "Informe um email válido.";
+        }
+
+        // Validação do Telefone
+        if (string.IsNullOrWhiteSpace(usuario.Telefone))
+        {
+            erros["Telefone"] = "O telefone é obrigatório.";
+        }
+        else if (usuario.Telefone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "").Length < 10)
+        {
+            erros["Telefone"] = "Informe um telefone válido.";
+        }
+
+        // Validação da Data de Nascimento
+        if (usuario.DataNascimento == default)
+        {
+            erros["DataNascimento"] = "A data de nascimento é obrigatória.";
+        }
+        else if (usuario.DataNascimento > DateTime.Now.AddYears(-12))
+        {
+            erros["DataNascimento"] = "O usuário deve ter pelo menos 12 anos.";
+        }
+
+        // Validação do Gênero
+        if (string.IsNullOrWhiteSpace(usuario.Genero))
+        {
+            erros["Genero"] = "O gênero é obrigatório.";
+        }
+
+        // Validação do Tipo de Membro
+        if (string.IsNullOrWhiteSpace(usuario.TipoMembro))
+        {
+            erros["TipoMembro"] = "O tipo de membro é obrigatório.";
+        }
+
+        // Validação da Senha (se foi informada)
+        if (!string.IsNullOrWhiteSpace(novaSenha))
+        {
+            if (novaSenha.Length < 8)
+            {
+                erros["Senha"] = "A senha deve ter pelo menos 8 caracteres.";
+            }
+            else if (novaSenha != confirmacaoSenha)
+            {
+                erros["ConfirmacaoSenha"] = "As senhas não coincidem.";
+            }
+        }
+    }
+
+    private void FormatarTelefone(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? string.Empty;
+        value = new string(value.Where(char.IsDigit).ToArray());
+
+        if (value.Length > 11)
+        {
+            value = value[..11];
+        }
+
+        if (value.Length > 0)
+        {
+            value = long.Parse(value).ToString(@"\(00\) 00000\-0000");
+        }
+
+        usuario.Telefone = value;
+        StateHasChanged();
     }
 }
