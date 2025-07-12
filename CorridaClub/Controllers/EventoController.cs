@@ -42,5 +42,12 @@ namespace CorridaClub.Controllers
                 .Include(e => e.Inscricoes)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
+
+        public async Task Atualizar(Evento evento)
+        {
+            
+            _context.Eventos.Update(evento);
+            await _context.SaveChangesAsync();
+        }
     }
 }
