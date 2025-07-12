@@ -31,5 +31,8 @@ namespace CorridaClub.Models
 
         public List<Inscricao>? Inscricoes { get; set; }
         public List<Pedido>? Pedidos { get; set; }
+
+        [NotMapped] // Para Entity Framework ignorar esta propriedade
+        public string ConfirmacaoSenha { get; set; }
     }
 }
