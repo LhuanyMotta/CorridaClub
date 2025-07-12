@@ -1,60 +1,231 @@
 ﻿@page "/eventos/criar"
+@rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
 @inject EventoController EventoController
 @inject NavigationManager Navigation
 
-<h3>Criar Novo Evento</h3>
+<div class="container">
+    <h1 class="my-4 text-primary text-center"><i class="fas fa-calendar-plus mr-2"></i> CRIAR NOVO EVENTO</h1>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            <!-- Mensagem de erro geral -->
+            @if (!string.IsNullOrEmpty(mensagemErro))
+            {
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+                </div>
+            }
 
-<EditForm Model="@novoEvento" OnValidSubmit="@SalvarEvento">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Nome do Evento:</label>
+                        <input @bind="novoEvento.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")" 
+                               placeholder="Digite o nome do evento" />
+                        @if (erros.ContainsKey("Nome"))
+                        {
+                            <div class="invalid-feedback">@erros["Nome"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Data:</label>
+                        <input @bind="novoEvento.Data" type="datetime-local" 
+                               class="form-control @(erros.ContainsKey("Data") ? "is-invalid" : "")" />
+                        @if (erros.ContainsKey("Data"))
+                        {
+                            <div class="invalid-feedback">@erros["Data"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="nome">Nome do Evento:</label>
-        <InputText id="nome" class="form-control" @bind-Value="novoEvento.Nome" />
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Local:</label>
+                        <input @bind="novoEvento.Local" class="form-control @(erros.ContainsKey("Local") ? "is-invalid" : "")" 
+                               placeholder="Digite o local do evento" />
+                        @if (erros.ContainsKey("Local"))
+                        {
+                            <div class="invalid-feedback">@erros["Local"]</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Distância (km):</label>
+                        <input @bind="novoEvento.Distancia" type="number" step="0.1"
+                               class="form-control @(erros.ContainsKey("Distancia") ? "is-invalid" : "")" 
+                               placeholder="Ex: 5, 10, 21.1" />
+                        @if (erros.ContainsKey("Distancia"))
+                        {
+                            <div class="invalid-feedback">@erros["Distancia"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Tipo de Corrida:</label>
+                        <select @bind="novoEvento.Tipo" class="form-control @(erros.ContainsKey("Tipo") ? "is-invalid" : "")">
+                            <option value="">Selecione o tipo</option>
+                            <option value="5km">5km</option>
+                            <option value="10km">10km</option>
+                            <option value="Meia Maratona">Meia Maratona (21km)</option>
+                            <option value="Maratona">Maratona (42km)</option>
+                        </select>
+                        @if (erros.ContainsKey("Tipo"))
+                        {
+                            <div class="invalid-feedback">@erros["Tipo"]</div>
+                        }
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Descrição:</label>
+                        <textarea @bind="novoEvento.Descricao" class="form-control @(erros.ContainsKey("Descricao") ? "is-invalid" : "")" 
+                                  rows="3" placeholder="Descreva o evento"></textarea>
+                        @if (erros.ContainsKey("Descricao"))
+                        {
+                            <div class="invalid-feedback">@erros["Descricao"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex">
+                @if (!cadastroSucesso)
+                {
+                    <button class="btn btn-primary mr-2" @onclick="SalvarEvento" disabled="@salvando">
+                        @if (salvando)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span class="ml-2">Salvando...</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-save"></i> @(erros.Count > 0 ? "Corrija os erros" : "Salvar")
+                        }
+                    </button>
+                    <a href="/eventos" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                }
+                else
+                {
+                    <div class="alert alert-success d-flex align-items-center w-100" role="alert">
+                        <i class="fas fa-check-circle fa-2x mr-3"></i>
+                        <div>
+                            <h4 class="alert-heading">Sucesso!</h4>
+                            <p class="mb-0">Evento cadastrado com sucesso.</p>
+                        </div>
+                    </div>
+                    <a href="/eventos" class="btn btn-success ml-auto">
+                        <i class="fas fa-list"></i> Ver Eventos
+                    </a>
+                    <button class="btn btn-primary ml-2" @onclick="NovoEvento">
+                        <i class="fas fa-plus"></i> Novo Evento
+                    </button>
+                }
+            </div>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label for="data">Data:</label>
-        <InputDate id="data" class="form-control" @bind-Value="novoEvento.Data" />
-    </div>
-
-    <div class="form-group">
-        <label for="local">Local:</label>
-        <InputText id="local" class="form-control" @bind-Value="novoEvento.Local" />
-    </div>
-
-    <div class="form-group">
-        <label for="distancia">Distância (km):</label>
-        <InputNumber id="distancia" class="form-control" @bind-Value="novoEvento.Distancia" />
-    </div>
-
-    <div class="form-group">
-        <label for="tipo">Tipo de Corrida:</label>
-        <InputSelect id="tipo" class="form-control" @bind-Value="novoEvento.Tipo">
-            <option value="5km">5km</option>
-            <option value="10km">10km</option>
-            <option value="Meia Maratona">Meia Maratona (21km)</option>
-            <option value="Maratona">Maratona (42km)</option>
-        </InputSelect>
-    </div>
-
-    <div class="form-group">
-        <label for="descricao">Descrição:</label>
-        <InputTextArea id="descricao" class="form-control" @bind-Value="novoEvento.Descricao" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <a href="/eventos" class="btn btn-secondary">Cancelar</a>
-</EditForm>
+</div>
 
 @code {
     private Evento novoEvento = new();
+    private bool salvando = false;
+    private bool cadastroSucesso = false;
+    private string mensagemErro = string.Empty;
+    private Dictionary<string, string> erros = new();
 
     private async Task SalvarEvento()
     {
-        await EventoController.Adicionar(novoEvento);
-        Navigation.NavigateTo("/eventos");
+        salvando = true;
+        erros.Clear();
+        mensagemErro = string.Empty;
+        
+        // Validações
+        ValidarCampos();
+
+        if (erros.Count == 0)
+        {
+            try
+            {
+                await EventoController.Adicionar(novoEvento);
+                cadastroSucesso = true;
+            }
+            catch (Exception ex)
+            {
+                mensagemErro = $"Erro ao salvar evento: {ex.Message}";
+                Console.WriteLine(mensagemErro);
+            }
+        }
+        else
+        {
+            mensagemErro = "Corrija os erros antes de salvar.";
+        }
+
+        salvando = false;
+        StateHasChanged();
+    }
+
+    private void NovoEvento()
+    {
+        cadastroSucesso = false;
+        novoEvento = new();
+        StateHasChanged();
+    }
+
+    private void ValidarCampos()
+    {
+        // Validação do Nome
+        if (string.IsNullOrWhiteSpace(novoEvento.Nome))
+        {
+            erros["Nome"] = "O nome do evento é obrigatório.";
+        }
+        else if (novoEvento.Nome.Length < 5)
+        {
+            erros["Nome"] = "O nome deve ter pelo menos 5 caracteres.";
+        }
+
+        // Validação da Data
+        if (novoEvento.Data == default)
+        {
+            erros["Data"] = "A data do evento é obrigatória.";
+        }
+        else if (novoEvento.Data < DateTime.Now)
+        {
+            erros["Data"] = "A data do evento deve ser futura.";
+        }
+
+        // Validação do Local
+        if (string.IsNullOrWhiteSpace(novoEvento.Local))
+        {
+            erros["Local"] = "O local do evento é obrigatório.";
+        }
+
+        // Validação da Distância
+        if (novoEvento.Distancia <= 0)
+        {
+            erros["Distancia"] = "A distância deve ser maior que zero.";
+        }
+
+        // Validação do Tipo
+        if (string.IsNullOrWhiteSpace(novoEvento.Tipo))
+        {
+            erros["Tipo"] = "O tipo de corrida é obrigatório.";
+        }
+        
     }
 }
