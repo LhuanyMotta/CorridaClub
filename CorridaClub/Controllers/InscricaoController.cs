@@ -25,6 +25,7 @@ namespace CorridaClub.Controllers
             return await _context.Inscricoes
                 .Where(i => i.EventoId == eventoId)
                 .Include(i => i.Usuario)
+                .Include(i => i.Evento)
                 .ToListAsync();
         }
 
@@ -45,6 +46,14 @@ namespace CorridaClub.Controllers
                 .Include(i => i.Usuario)
                 .OrderByDescending(i => i.DataInscricao)
                 .ToListAsync();
+        }
+
+        public async Task<Inscricao?> ObterInscricaoCompleta(int id)
+        {
+            return await _context.Inscricoes
+                .Include(i => i.Evento)
+                .Include(i => i.Usuario)
+                .FirstOrDefaultAsync(i => i.Id == id);
         }
     }
 }
