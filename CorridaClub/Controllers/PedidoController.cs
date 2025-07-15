@@ -36,5 +36,31 @@ namespace CorridaClub.Controllers
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<Pedido>> ListarTodosPedidos()
+        {
+            return await _context.Pedidos
+                .Include(p => p.Usuario)
+                .OrderByDescending(p => p.DataPedido)
+                .ToListAsync();
+        }
+
+        public async Task CancelarPedido(int pedidoId)
+        {
+            var pedido = await _context.Pedidos.FindAsync(pedidoId);
+            if (pedido != null && pedido.Status != "Entregue")
+            {
+                pedido.Status = "Cancelado";
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<Pedido?> ObterPedidoPorId(int id)
+        {
+            return await _context.Pedidos
+                .Include(p => p.Usuario)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
     }
 }
