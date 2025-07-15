@@ -1,45 +1,100 @@
 ﻿@page "/pedidos/detalhes/{id:int}"
+@rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
 @inject PedidoController PedidoController
 @inject NavigationManager Navigation
 
-<h3>Detalhes do Pedido</h3>
-
-@if (pedido == null)
-{
-    <p>Carregando pedido...</p>
-}
-else
-{
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Pedido #@pedido.Id</h5>
-            <p class="card-text"><strong>Cliente:</strong> @pedido.Usuario?.Nome</p>
-            <p class="card-text"><strong>Item:</strong> @pedido.Item (@pedido.Tamanho)</p>
-            <p class="card-text"><strong>Quantidade:</strong> @pedido.Quantidade</p>
-            <p class="card-text"><strong>Status:</strong> @pedido.Status</p>
-            <p class="card-text"><strong>Data Pedido:</strong> @pedido.DataPedido?.ToString("dd/MM/yyyy")</p>
-
-            <div class="mt-3">
-                <h5>Alterar Status</h5>
-                <select class="form-control mb-2" @bind="novoStatus">
-                    <option value="Pendente">Pendente</option>
-                    <option value="Processando">Processando</option>
-                    <option value="Enviado">Enviado</option>
-                    <option value="Entregue">Entregue</option>
-                    <option value="Cancelado">Cancelado</option>
-                </select>
-                <button @onclick="(() => AtualizarStatus(pedido.Id))"
-                        class="btn btn-primary">
-                    Atualizar Status
-                </button>
+<div class="container">
+    @if (carregando)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Carregando...</span>
             </div>
-
-            <a href="/pedidos" class="btn btn-secondary mt-3">Voltar</a>
+            <p class="mt-2">Carregando pedido...</p>
         </div>
-    </div>
-}
+    }
+    else if (pedido == null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle mr-2"></i> Pedido não encontrado
+        </div>
+        <a href="/pedidos" class="btn btn-secondary">Voltar para lista</a>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-file-invoice mr-2"></i> Detalhes do Pedido #@pedido.Id</h1>
+            <a href="/pedidos" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left mr-1"></i> Voltar
+            </a>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h5 class="text-primary"><i class="fas fa-user mr-2"></i> Cliente</h5>
+                            <p class="ml-4">@pedido.Usuario?.Nome</p>
+                            <p class="ml-4 text-muted">@pedido.Usuario?.Email</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h5 class="text-primary"><i class="fas fa-box mr-2"></i> Item</h5>
+                            <p class="ml-4">@pedido.Item (@pedido.Tamanho)</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h5 class="text-primary"><i class="fas fa-info-circle mr-2"></i> Informações</h5>
+                            <p class="ml-4"><strong>Quantidade:</strong> @pedido.Quantidade</p>
+                            <p class="ml-4"><strong>Data:</strong> @(pedido.DataPedido != null ? pedido.DataPedido?.ToString("dd/MM/yyyy") : "-")</p>
+                            <p class="ml-4">
+                                <strong>Status:</strong> 
+                                <span class="badge @GetBadgeClass(pedido.Status)">
+                                    @pedido.Status
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 border-top pt-3">
+                    <h5 class="text-primary"><i class="fas fa-sync-alt mr-2"></i> Alterar Status</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-control" @bind="novoStatus">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Processando">Processando</option>
+                                <option value="Enviado">Enviado</option>
+                                <option value="Entregue">Entregue</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <button @onclick="(() => AtualizarStatus(pedido.Id))"
+                                    class="btn btn-primary"
+                                    disabled="@(pedido.Status == novoStatus || atualizando)">
+                                @if (atualizando)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    <span class="ml-2">Atualizando...</span>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-save mr-1"></i> <span>Atualizar Status</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     [Parameter]
@@ -47,20 +102,58 @@ else
 
     private Pedido? pedido;
     private string novoStatus = "Pendente";
+    private bool carregando = true;
+    private bool atualizando = false;
+    private string mensagemErro = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        var pedidos = await PedidoController.ListarPedidosPorUsuario(0);
-        pedido = pedidos.FirstOrDefault(p => p.Id == Id);
-        if (pedido != null)
+        try
         {
-            novoStatus = pedido.Status;
+            pedido = await PedidoController.ObterPedidoPorId(Id);
+            if (pedido != null)
+            {
+                novoStatus = pedido.Status;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao carregar pedido: {ex.Message}";
+        }
+        finally
+        {
+            carregando = false;
         }
     }
 
     private async Task AtualizarStatus(int pedidoId)
     {
-        await PedidoController.AtualizarStatusPedido(pedidoId, novoStatus);
-        Navigation.NavigateTo($"/pedidos/detalhes/{pedidoId}", forceLoad: true);
+        atualizando = true;
+        try
+        {
+            await PedidoController.AtualizarStatusPedido(pedidoId, novoStatus);
+            pedido = await PedidoController.ObterPedidoPorId(pedidoId);
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao atualizar status: {ex.Message}";
+        }
+        finally
+        {
+            atualizando = false;
+        }
+    }
+
+    private string GetBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pendente" => "badge bg-warning text-dark",
+            "Processando" => "badge bg-info text-white",
+            "Enviado" => "badge bg-primary text-white",
+            "Entregue" => "badge bg-success text-white",
+            "Cancelado" => "badge bg-danger text-white",
+            _ => "badge bg-secondary text-white"
+        };
     }
 }

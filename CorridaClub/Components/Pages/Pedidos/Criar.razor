@@ -1,72 +1,216 @@
 ﻿@page "/pedidos/criar"
+@rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
 @inject PedidoController PedidoController
 @inject UsuarioController UsuarioController
 @inject NavigationManager Navigation
 
-<h3>Novo Pedido</h3>
-
-<EditForm Model="@novoPedido" OnValidSubmit="@SalvarPedido">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="form-group">
-        <label for="usuarioId">Cliente:</label>
-        <InputSelect id="usuarioId" class="form-control" @bind-Value="novoPedido.UsuarioId">
-            <option value="">Selecione um cliente</option>
-            @foreach (var usuario in usuarios)
+<div class="container">
+    <h1 class="my-4 text-primary text-center"><i class="fas fa-shopping-cart mr-2"></i> NOVO PEDIDO</h1>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            @if (usuarios == null)
             {
-                <option value="@usuario.Id">@usuario.Nome (@usuario.Email)</option>
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                    <p class="mt-2">Carregando clientes...</p>
+                </div>
             }
-        </InputSelect>
-    </div>
+            else
+            {
+                <!-- Mensagem de erro geral -->
+                @if (!string.IsNullOrEmpty(mensagemErro))
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+                    </div>
+                }
 
-    <div class="form-group">
-        <label for="item">Item:</label>
-        <InputSelect id="item" class="form-control" @bind-Value="novoPedido.Item">
-            <option value="Camiseta">Camiseta</option>
-            <option value="Tênis">Tênis</option>
-            <option value="Medalha">Medalha</option>
-            <option value="Kit Corrida">Kit Corrida</option>
-        </InputSelect>
-    </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Cliente:</label>
+                            <select @bind="novoPedido.UsuarioId" class="form-control @(erros.ContainsKey("UsuarioId") ? "is-invalid" : "")">
+                                <option value="">Selecione um cliente</option>
+                                @foreach (var usuario in usuarios)
+                                {
+                                    <option value="@usuario.Id">@usuario.Nome (@usuario.Email)</option>
+                                }
+                            </select>
+                            @if (erros.ContainsKey("UsuarioId"))
+                            {
+                                <div class="invalid-feedback">@erros["UsuarioId"]</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Item:</label>
+                            <select @bind="novoPedido.Item" class="form-control @(erros.ContainsKey("Item") ? "is-invalid" : "")">
+                                <option value="">Selecione um item</option>
+                                <option value="Camiseta">Camiseta</option>
+                                <option value="Tênis">Tênis</option>
+                                <option value="Medalha">Medalha</option>
+                                <option value="Kit Corrida">Kit Corrida</option>
+                            </select>
+                            @if (erros.ContainsKey("Item"))
+                            {
+                                <div class="invalid-feedback">@erros["Item"]</div>
+                            }
+                        </div>
+                    </div>
+                </div>
 
-    <div class="form-group">
-        <label for="tamanho">Tamanho:</label>
-        <InputSelect id="tamanho" class="form-control" @bind-Value="novoPedido.Tamanho">
-            <option value="P">P</option>
-            <option value="M">M</option>
-            <option value="G">G</option>
-            <option value="GG">GG</option>
-        </InputSelect>
-    </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tamanho:</label>
+                            <select @bind="novoPedido.Tamanho" class="form-control @(erros.ContainsKey("Tamanho") ? "is-invalid" : "")">
+                                <option value="">Selecione o tamanho</option>
+                                <option value="P">P</option>
+                                <option value="M">M</option>
+                                <option value="G">G</option>
+                                <option value="GG">GG</option>
+                                <option value="Único">Único</option>
+                            </select>
+                            @if (erros.ContainsKey("Tamanho"))
+                            {
+                                <div class="invalid-feedback">@erros["Tamanho"]</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Quantidade:</label>
+                            <input @bind="novoPedido.Quantidade" type="number" min="1" 
+                                   class="form-control @(erros.ContainsKey("Quantidade") ? "is-invalid" : "")" />
+                            @if (erros.ContainsKey("Quantidade"))
+                            {
+                                <div class="invalid-feedback">@erros["Quantidade"]</div>
+                            }
+                        </div>
+                    </div>
+                </div>
 
-    <div class="form-group">
-        <label for="quantidade">Quantidade:</label>
-        <InputNumber id="quantidade" class="form-control" @bind-Value="novoPedido.Quantidade" min="1" />
-    </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Status:</label>
+                            <input type="text" class="form-control" value="Pendente" disabled />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Data do Pedido:</label>
+                            <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" disabled />
+                        </div>
+                    </div>
+                </div>
 
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <a href="/pedidos" class="btn btn-secondary">Cancelar</a>
-</EditForm>
+                <div class="mt-4 d-flex">
+                    <button class="btn btn-primary mr-2" @onclick="SalvarPedido" disabled="@salvando">
+                        @if (salvando)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span class="ml-2">Salvando...</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-save mr-1"></i> <span class="ml-2"> Salvar Pedido</span>
+                        }
+                    </button>
+                    <a href="/pedidos" class="btn btn-outline-secondary">
+                        <i class="fas fa-times mr-1"></i> Cancelar
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 @code {
-    private List<Usuario> usuarios = new();
+    private List<Usuario>? usuarios;
     private Pedido novoPedido = new()
     {
         DataPedido = DateTime.Now,
-        Status = "Pendente"
+        Status = "Pendente",
+        Quantidade = 1
     };
+    private bool salvando = false;
+    private string mensagemErro = string.Empty;
+    private Dictionary<string, string> erros = new();
 
     protected override async Task OnInitializedAsync()
     {
-        usuarios = await UsuarioController.ListarUsuarios();
+        try
+        {
+            usuarios = await UsuarioController.ListarUsuarios();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao carregar clientes: {ex.Message}";
+        }
     }
 
     private async Task SalvarPedido()
     {
-        await PedidoController.AdicionarPedido(novoPedido);
-        Navigation.NavigateTo("/pedidos");
+        salvando = true;
+        erros.Clear();
+        mensagemErro = string.Empty;
+        
+        // Validações
+        ValidarCampos();
+
+        if (erros.Count == 0)
+        {
+            try
+            {
+                await PedidoController.AdicionarPedido(novoPedido);
+                Navigation.NavigateTo("/pedidos");
+            }
+            catch (Exception ex)
+            {
+                mensagemErro = $"Erro ao salvar pedido: {ex.Message}";
+                Console.WriteLine(mensagemErro);
+            }
+        }
+        else
+        {
+            mensagemErro = "Corrija os erros antes de salvar.";
+        }
+
+        salvando = false;
+        StateHasChanged();
+    }
+
+    private void ValidarCampos()
+    {
+        // Validação do Cliente
+        if (novoPedido.UsuarioId == 0)
+        {
+            erros["UsuarioId"] = "Selecione um cliente.";
+        }
+
+        // Validação do Item
+        if (string.IsNullOrWhiteSpace(novoPedido.Item))
+        {
+            erros["Item"] = "Selecione um item.";
+        }
+
+        // Validação do Tamanho
+        if (string.IsNullOrWhiteSpace(novoPedido.Tamanho))
+        {
+            erros["Tamanho"] = "Selecione o tamanho.";
+        }
+
+        // Validação da Quantidade
+        if (novoPedido.Quantidade < 1)
+        {
+            erros["Quantidade"] = "A quantidade deve ser maior que zero.";
+        }
     }
 }
