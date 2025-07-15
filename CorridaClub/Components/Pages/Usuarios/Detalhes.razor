@@ -3,41 +3,263 @@
 @using CorridaClub.Models
 @inject UsuarioController UsuarioController
 
-<h3>Detalhes do Usuário</h3>
-
-@if (usuario == null)
-{
-    <p>Carregando usuário...</p>
-}
-else
-{
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">@usuario.Nome</h5>
-            <p class="card-text"><strong>Email:</strong> @usuario.Email</p>
-            <p class="card-text"><strong>Telefone:</strong> @usuario.Telefone</p>
-            <p class="card-text"><strong>Tipo:</strong> @usuario.TipoMembro</p>
-
-            <h5 class="mt-4">Inscrições</h5>
-            @if (usuario.Inscricoes?.Any() ?? false)
-            {
-                <ul>
-                    @foreach (var inscricao in usuario.Inscricoes)
-                    {
-                        <li>@inscricao.Evento?.Nome - @inscricao.Status</li>
-                    }
-                </ul>
-            }
-            else
-            {
-                <p>Nenhuma inscrição encontrada.</p>
-            }
-
-            <a href="/usuarios/editar/@usuario.Id" class="btn btn-warning">Editar</a>
-            <a href="/usuarios" class="btn btn-secondary">Voltar</a>
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Detalhes do <span class="highlight">Usuário</span></h1>
+            <p class="subtitle">Visualize as informações completas deste usuário</p>
         </div>
+
+        @if (usuario == null)
+        {
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Carregando usuário...</p>
+            </div>
+        }
+        else
+        {
+            <div class="detail-container">
+                <div class="detail-row">
+                    <div class="detail-group">
+                        <label>Nome:</label>
+                        <p>@usuario.Nome</p>
+                    </div>
+                    <div class="detail-group">
+                        <label>Email:</label>
+                        <p>@usuario.Email</p>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-group">
+                        <label>Telefone:</label>
+                        <p>@usuario.Telefone</p>
+                    </div>
+                    <div class="detail-group">
+                        <label>Tipo de Membro:</label>
+                        <p>@usuario.TipoMembro</p>
+                    </div>
+                </div>
+
+                <div class="inscricoes-section">
+                    <h3>Inscrições</h3>
+                    @if (usuario.Inscricoes?.Any() ?? false)
+                    {
+                        <div class="inscricoes-list">
+                            @foreach (var inscricao in usuario.Inscricoes)
+                            {
+                                <div class="inscricao-item">
+                                    <span>@inscricao.Evento?.Nome</span>
+                                    <span class="status">@inscricao.Status</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="no-inscricoes">Nenhuma inscrição encontrada.</p>
+                    }
+                </div>
+
+                <div class="action-buttons">
+                    <a href="/usuarios/editar/@usuario.Id" class="action-btn">
+                        <span class="btn-icon">✏️</span>
+                        <span class="btn-text">Editar</span>
+                    </a>
+                    <a href="/usuarios" class="action-btn cancel-btn">
+                        <span class="btn-icon">⬅️</span>
+                        <span class="btn-text">Voltar</span>
+                    </a>
+                </div>
+            </div>
+        }
     </div>
-}
+</div>
+
+<style>
+    :root {
+        --primary-color: #E65100;
+        --secondary-color: #FB8C00;
+        --background: #f8f9fa;
+        --text-dark: #333333;
+        --text-light: #ffffff;
+    }
+
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        min-height: 100vh;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+    }
+
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid var(--primary-color);
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .detail-container {
+        margin-top: 1.5rem;
+    }
+
+    .detail-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-group {
+        flex: 1;
+    }
+
+        .detail-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-group p {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin: 0;
+        }
+
+    .inscricoes-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+        .inscricoes-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+    .inscricoes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .inscricao-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .no-inscricoes {
+        color: var(--text-dark);
+        font-style: italic;
+        opacity: 0.7;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .action-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(251, 140, 0, 0.3);
+    }
+
+        .action-btn:hover {
+            background-color: white;
+            color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(251, 140, 0, 0.4);
+            border: 2px solid var(--secondary-color);
+        }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+        .cancel-btn:hover {
+            background-color: white;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+    .btn-icon {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+</style>
 
 @code {
     [Parameter]

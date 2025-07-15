@@ -1,35 +1,113 @@
 ﻿<div class="sidebar">
-    <div class="top-row pl-4 navbar navbar-dark">
-        <a class="navbar-brand" href="">CorridaClub</a>
+    <div class="navbar-top">
+        <a class="navbar-brand" href="">
+            <span class="app-icon">🏃‍♂️</span> CorridaClub
+        </a>
     </div>
 
     <div class="nav-scrollable">
-        <ul class="nav flex-column">
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/">
-                    <span class="oi oi-home" aria-hidden="true"></span> Home
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a class="nav-link" href="/" active-class="active">
+                    <span class="nav-icon">🏠</span> Home
                 </a>
             </li>
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/usuarios">
-                    <span class="oi oi-people" aria-hidden="true"></span> Usuários
+            <li class="nav-item">
+                <a class="nav-link" href="/usuarios" active-class="active">
+                    <span class="nav-icon">👥</span> Usuários
                 </a>
             </li>
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/eventos">
-                    <span class="oi oi-calendar" aria-hidden="true"></span> Eventos
+            <li class="nav-item">
+                <a class="nav-link" href="/eventos" active-class="active">
+                    <span class="nav-icon">📅</span> Eventos
                 </a>
             </li>
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/inscricoes">
-                    <span class="oi oi-clipboard" aria-hidden="true"></span> Inscrições
+            <li class="nav-item">
+                <a class="nav-link" href="/inscricoes" active-class="active">
+                    <span class="nav-icon">📝</span> Inscrições
                 </a>
             </li>
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/pedidos">
-                    <span class="oi oi-cart" aria-hidden="true"></span> Pedidos
+            <li class="nav-item">
+                <a class="nav-link" href="/pedidos" active-class="active">
+                    <span class="nav-icon">📦</span> Pedidos
                 </a>
             </li>
         </ul>
     </div>
 </div>
+
+<style>
+    .sidebar {
+        width: 280px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        background-color: white;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        border-right: 1px solid #e0e0e0;
+    }
+
+    .navbar-top {
+        padding: 1.2rem;
+        background-color: var(--primary-color);
+        color: var(--text-light);
+    }
+
+    .navbar-brand {
+        color: var(--text-light);
+        text-decoration: none;
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .app-icon {
+        font-size: 1.6rem;
+    }
+
+    .nav-scrollable {
+        height: calc(100vh - 70px);
+        overflow-y: auto;
+        padding: 1.2rem 0;
+    }
+
+    .nav-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-item {
+        margin: 0.3rem 1.2rem;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        color: var(--text-dark);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+        .nav-link:hover {
+            background-color: var(--light-orange);
+        }
+
+        .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+    .nav-icon {
+        font-size: 1.3rem;
+    }
+</style>
