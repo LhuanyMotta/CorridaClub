@@ -6,168 +6,311 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 
-<div class="container">
-    <h1 class="my-4 text-primary text-center"><i class="fas fa-user-plus mr-2"></i> CADASTRAR NOVO USUÁRIO</h1>
-    
-    <div class="card shadow">
-        <div class="card-body">
-            <!-- Mensagem de erro geral -->
-            @if (!string.IsNullOrEmpty(mensagemErro))
-            {
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
-                </div>
-            }
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Cadastrar <span class="highlight">Novo Usuário</span></h1>
+            <p class="subtitle">Preencha os dados abaixo para criar um novo usuário</p>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Nome:</label>
-                        <input @bind="novoUsuario.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")" 
-                               placeholder="Digite o nome completo" />
-                        @if (erros.ContainsKey("Nome"))
-                        {
-                            <div class="invalid-feedback">@erros["Nome"]</div>
-                        }
-                    </div>
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+            </div>
+        }
+
+        <div class="form-container">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome Completo:</label>
+                    <input @bind="novoUsuario.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")"
+                           placeholder="Digite o nome completo" />
+                    @if (erros.ContainsKey("Nome"))
+                    {
+                        <div class="invalid-feedback">@erros["Nome"]</div>
+                    }
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Email:</label>
-                        <input @bind="novoUsuario.Email" class="form-control @(erros.ContainsKey("Email") ? "is-invalid" : "")" 
-                               placeholder="Digite o email" />
-                        @if (erros.ContainsKey("Email"))
-                        {
-                            <div class="invalid-feedback">@erros["Email"]</div>
-                        }
-                    </div>
+
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input @bind="novoUsuario.Email" class="form-control @(erros.ContainsKey("Email") ? "is-invalid" : "")"
+                           placeholder="Digite o email" />
+                    @if (erros.ContainsKey("Email"))
+                    {
+                        <div class="invalid-feedback">@erros["Email"]</div>
+                    }
                 </div>
             </div>
 
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Senha:</label>
-                        <input @bind="novoUsuario.Senha" type="password" 
-                               class="form-control @(erros.ContainsKey("Senha") ? "is-invalid" : "")" 
-                               placeholder="Mínimo 8 caracteres" />
-                        @if (erros.ContainsKey("Senha"))
-                        {
-                            <div class="invalid-feedback">@erros["Senha"]</div>
-                        }
-                        <small class="form-text text-muted">
-                            Força da senha: <span class="@GetClasseForcaSenha()">@GetTextoForcaSenha()</span>
-                        </small>
-                    </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Senha:</label>
+                    <input @bind="novoUsuario.Senha" type="password"
+                           class="form-control @(erros.ContainsKey("Senha") ? "is-invalid" : "")"
+                           placeholder="Mínimo 8 caracteres" />
+                    @if (erros.ContainsKey("Senha"))
+                    {
+                        <div class="invalid-feedback">@erros["Senha"]</div>
+                    }
+                    <small class="form-text">
+                        Força da senha: <span class="@GetClasseForcaSenha()">@GetTextoForcaSenha()</span>
+                    </small>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Confirmar Senha:</label>
-                        <input @bind="confirmacaoSenha" type="password" 
-                               class="form-control @(erros.ContainsKey("ConfirmacaoSenha") ? "is-invalid" : "")" />
-                        @if (erros.ContainsKey("ConfirmacaoSenha"))
-                        {
-                            <div class="invalid-feedback">@erros["ConfirmacaoSenha"]</div>
-                        }
-                    </div>
+
+                <div class="form-group">
+                    <label>Confirmar Senha:</label>
+                    <input @bind="confirmacaoSenha" type="password"
+                           class="form-control @(erros.ContainsKey("ConfirmacaoSenha") ? "is-invalid" : "")"
+                           placeholder="Confirme a senha" />
+                    @if (erros.ContainsKey("ConfirmacaoSenha"))
+                    {
+                        <div class="invalid-feedback">@erros["ConfirmacaoSenha"]</div>
+                    }
                 </div>
             </div>
 
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Telefone:</label>
-                        <input @bind="novoUsuario.Telefone" @oninput="FormatarTelefone" 
-                               class="form-control @(erros.ContainsKey("Telefone") ? "is-invalid" : "")" 
-                               placeholder="(00) 00000-0000" />
-                        @if (erros.ContainsKey("Telefone"))
-                        {
-                            <div class="invalid-feedback">@erros["Telefone"]</div>
-                        }
-                    </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Telefone:</label>
+                    <input @bind="novoUsuario.Telefone" @oninput="FormatarTelefone"
+                           class="form-control @(erros.ContainsKey("Telefone") ? "is-invalid" : "")"
+                           placeholder="(00) 00000-0000" />
+                    @if (erros.ContainsKey("Telefone"))
+                    {
+                        <div class="invalid-feedback">@erros["Telefone"]</div>
+                    }
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Data de Nascimento:</label>
-                        <input @bind="novoUsuario.DataNascimento" type="date" 
-                               class="form-control @(erros.ContainsKey("DataNascimento") ? "is-invalid" : "")" 
-                               max="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                        @if (erros.ContainsKey("DataNascimento"))
-                        {
-                            <div class="invalid-feedback">@erros["DataNascimento"]</div>
-                        }
-                    </div>
+
+                <div class="form-group">
+                    <label>Data de Nascimento:</label>
+                    <input @bind="novoUsuario.DataNascimento" type="date"
+                           class="form-control @(erros.ContainsKey("DataNascimento") ? "is-invalid" : "")"
+                           max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    @if (erros.ContainsKey("DataNascimento"))
+                    {
+                        <div class="invalid-feedback">@erros["DataNascimento"]</div>
+                    }
                 </div>
             </div>
 
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Gênero:</label>
-                        <select @bind="novoUsuario.Genero" class="form-control @(erros.ContainsKey("Genero") ? "is-invalid" : "")">
-                            <option value="">Selecione...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Feminino">Feminino</option>
-                            <option value="Outro">Outro</option>
-                        </select>
-                        @if (erros.ContainsKey("Genero"))
-                        {
-                            <div class="invalid-feedback">@erros["Genero"]</div>
-                        }
-                    </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Gênero:</label>
+                    <select @bind="novoUsuario.Genero" class="form-control @(erros.ContainsKey("Genero") ? "is-invalid" : "")">
+                        <option value="">Selecione...</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                    @if (erros.ContainsKey("Genero"))
+                    {
+                        <div class="invalid-feedback">@erros["Genero"]</div>
+                    }
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Tipo de Membro:</label>
-                        <select @bind="novoUsuario.TipoMembro" class="form-control @(erros.ContainsKey("TipoMembro") ? "is-invalid" : "")">
-                            <option value="">Selecione...</option>
-                            <option value="Atleta">Atleta</option>
-                            <option value="Organizador">Organizador</option>
-                            <option value="Admin">Administrador</option>
-                        </select>
-                        @if (erros.ContainsKey("TipoMembro"))
-                        {
-                            <div class="invalid-feedback">@erros["TipoMembro"]</div>
-                        }
-                    </div>
+
+                <div class="form-group">
+                    <label>Tipo de Membro:</label>
+                    <select @bind="novoUsuario.TipoMembro" class="form-control @(erros.ContainsKey("TipoMembro") ? "is-invalid" : "")">
+                        <option value="">Selecione...</option>
+                        <option value="Atleta">Atleta</option>
+                        <option value="Organizador">Organizador</option>
+                        <option value="Admin">Administrador</option>
+                    </select>
+                    @if (erros.ContainsKey("TipoMembro"))
+                    {
+                        <div class="invalid-feedback">@erros["TipoMembro"]</div>
+                    }
                 </div>
             </div>
 
-            <div class="mt-4 d-flex">
+            <div class="action-buttons">
                 @if (!cadastroSucesso)
                 {
-                    <button class="btn btn-primary mr-2" @onclick="SalvarUsuario" disabled="@salvando">
+                    <button class="action-btn" @onclick="SalvarUsuario" disabled="@salvando">
                         @if (salvando)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span class="ml-2">Salvando...</span>
+                            <span>Salvando...</span>
                         }
                         else
                         {
-                            <i class="fas fa-save"></i> @(erros.Count > 0 ? "Corrija os erros" : "Salvar")
+                            <span class="btn-icon">💾</span>
+                            <span class="btn-text">@(erros.Count > 0 ? "Corrija os erros" : "Salvar")</span>
                         }
                     </button>
-                    <a href="/usuarios" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Cancelar
+                    <a href="/usuarios" class="action-btn cancel-btn">
+                        <span class="btn-icon">❌</span>
+                        <span class="btn-text">Cancelar</span>
                     </a>
                 }
                 else
                 {
-                    <div class="alert alert-success d-flex align-items-center w-100" role="alert">
-                        <i class="fas fa-check-circle fa-2x mr-3"></i>
+                    <div class="success-message">
+                        <span class="btn-icon">✅</span>
                         <div>
-                            <h4 class="alert-heading">Sucesso!</h4>
-                            <p class="mb-0">Usuário cadastrado com sucesso.</p>
+                            <h4>Sucesso!</h4>
+                            <p>Usuário cadastrado com sucesso.</p>
                         </div>
                     </div>
-                    <a href="/usuarios" class="btn btn-success ml-auto">
-                        <i class="fas fa-list"></i> Ver Usuários
+                    <a href="/usuarios" class="action-btn">
+                        <span class="btn-icon">👥</span>
+                        <span class="btn-text">Ver Usuários</span>
                     </a>
                 }
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        max-width: 900px;
+        width: 100%;
+    }
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .form-container {
+        margin-top: 1.5rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        text-decoration: none;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(251, 140, 0, 0.3);
+        border: none;
+        cursor: pointer;
+        min-width: 180px;
+    }
+
+        .action-btn:hover {
+            background-color: white;
+            color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(251, 140, 0, 0.4);
+            border: 2px solid var(--secondary-color);
+        }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+        .cancel-btn:hover {
+            background-color: white;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+    .btn-icon {
+        font-size: 1.5rem;
+        margin-right: 0.8rem;
+    }
+
+    .btn-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .success-message {
+        display: flex;
+        align-items: center;
+        background-color: #d4edda;
+        color: #155724;
+        padding: 1.2rem;
+        border-radius: 8px;
+        flex: 1;
+    }
+
+        .success-message h4 {
+            margin-bottom: 0.3rem;
+            font-weight: 700;
+        }
+
+        .success-message p {
+            margin-bottom: 0;
+        }
+</style>
 
 @code {
     private Usuario novoUsuario = new Usuario();
@@ -194,7 +337,6 @@
         erros.Clear();
         mensagemErro = string.Empty;
         
-        // Validações
         ValidarCampos();
 
         if (erros.Count == 0)
@@ -221,7 +363,6 @@
 
     private void ValidarCampos()
     {
-        // Validação do Nome
         if (string.IsNullOrWhiteSpace(novoUsuario.Nome))
         {
             erros["Nome"] = "O nome é obrigatório.";
@@ -231,7 +372,6 @@
             erros["Nome"] = "O nome deve ter pelo menos 3 caracteres.";
         }
 
-        // Validação do Email
         if (string.IsNullOrWhiteSpace(novoUsuario.Email))
         {
             erros["Email"] = "O email é obrigatório.";
@@ -241,7 +381,6 @@
             erros["Email"] = "Informe um email válido.";
         }
 
-        // Validação da Senha
         if (string.IsNullOrWhiteSpace(novoUsuario.Senha))
         {
             erros["Senha"] = "A senha é obrigatória.";
@@ -251,13 +390,11 @@
             erros["Senha"] = "A senha deve ter pelo menos 8 caracteres.";
         }
 
-        // Validação de Confirmação de Senha
         if (novoUsuario.Senha != confirmacaoSenha)
         {
             erros["ConfirmacaoSenha"] = "As senhas não coincidem.";
         }
 
-        // Validação do Telefone
         if (string.IsNullOrWhiteSpace(novoUsuario.Telefone))
         {
             erros["Telefone"] = "O telefone é obrigatório.";
@@ -267,7 +404,6 @@
             erros["Telefone"] = "Informe um telefone válido.";
         }
 
-        // Validação da Data de Nascimento
         if (novoUsuario.DataNascimento == default)
         {
             erros["DataNascimento"] = "A data de nascimento é obrigatória.";
@@ -277,13 +413,11 @@
             erros["DataNascimento"] = "O usuário deve ter pelo menos 12 anos.";
         }
 
-        // Validação do Gênero
         if (string.IsNullOrWhiteSpace(novoUsuario.Genero))
         {
             erros["Genero"] = "O gênero é obrigatório.";
         }
 
-        // Validação do Tipo de Membro
         if (string.IsNullOrWhiteSpace(novoUsuario.TipoMembro))
         {
             erros["TipoMembro"] = "O tipo de membro é obrigatório.";
@@ -320,27 +454,23 @@
         var input = e.Value?.ToString() ?? string.Empty;
         var digits = new string(input.Where(char.IsDigit).ToArray());
         
-        // Limitar a 11 dígitos (DDD + 9 dígitos)
         if (digits.Length > 11)
         {
             digits = digits[..11];
         }
 
-        // Apenas formata quando tiver dígitos suficientes
         string formatted = digits;
         if (digits.Length > 0)
         {
             formatted = digits.Length <= 2 ? 
-                $"({digits}" :  // Inicia com DDD
+                $"({digits}" :
                 digits.Length <= 7 ?
-                $"({digits[..2]}) {digits[2..]}" :  // Adiciona ) e espaço
-                $"({digits[..2]}) {digits[2..7]}-{digits[7..]}";  // Completo com -
+                $"({digits[..2]}) {digits[2..]}" :
+                $"({digits[..2]}) {digits[2..7]}-{digits[7..]}"; 
         }
 
-        // Mantém a posição do cursor
         novoUsuario.Telefone = formatted;
         
-        // Força atualização do campo
         StateHasChanged();
     }
 }

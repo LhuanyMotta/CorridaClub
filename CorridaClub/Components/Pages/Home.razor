@@ -1,7 +1,115 @@
 ﻿@page "/"
+@page "/home"
+@inherits LayoutComponentBase
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Início</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Bem-vindo ao <span class="highlight">CorridaClub</span></h1>
+            <p class="subtitle">Gerencie corridas, usuários e muito mais de forma rápida e prática!</p>
+        </div>
 
-Welcome to your new app.
+        <div class="action-buttons">
+            <a class="action-btn" href="/usuarios">
+                <span class="btn-icon">👤</span>
+                <span class="btn-text">Usuários</span>
+            </a>
+            <a class="action-btn" href="/eventos">
+                <span class="btn-icon">📅</span>
+                <span class="btn-text">Eventos</span>
+            </a>
+            <a class="action-btn" href="/inscricoes">
+                <span class="btn-icon">📝</span>
+                <span class="btn-text">Inscrições</span>
+            </a>
+            <a class="action-btn" href="/pedidos">
+                <span class="btn-icon">📦</span>
+                <span class="btn-text">Pedidos</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem 0;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3.5rem;
+        box-shadow: 0 12px 35px rgba(230, 81, 0, 0.1);
+        max-width: 900px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .header h1 {
+        color: #E65100;
+        font-family: var(--font-heading);
+        font-size: 3rem;
+        margin-bottom: 1.2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .highlight {
+        color: #FB8C00;
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.4rem;
+        opacity: 0.9;
+        margin-bottom: 3rem;
+        line-height: 1.5;
+    }
+
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+
+    .action-btn {
+        background-color: #FB8C00;
+        color: white;
+        text-decoration: none;
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(251, 140, 0, 0.3);
+        border: 2px solid transparent;
+    }
+
+        .action-btn:hover {
+            background-color: white;
+            color: #FB8C00;
+            transform: translateY(-5px);
+            border-color: #FB8C00;
+            box-shadow: 0 10px 25px rgba(251, 140, 0, 0.4);
+        }
+
+    .btn-icon {
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-text {
+        font-size: 1.3rem;
+        font-weight: 600;
+        font-family: var(--font-heading);
+    }
+</style>
