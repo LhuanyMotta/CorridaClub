@@ -1,58 +1,323 @@
 ﻿@page "/inscricoes"
+@rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
 @inject InscricaoController InscricaoController
 @inject EventoController EventoController
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<h3>Lista de Inscrições</h3>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="fas fa-file-signature mr-2"></i> LISTA DE INSCRIÇÕES</h1>
+        <a href="/inscricoes/criar" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i> Nova Inscrição
+        </a>
+    </div>
 
-@if (inscricoes == null)
-{
-    <p>Carregando inscrições...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Evento</th>
-                <th>Participante</th>
-                <th>Data</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var inscricao in inscricoes)
-            {
-                <tr>
-                    <td>@(inscricao.Evento?.Nome ?? "N/A")</td>
-                    <td>@(inscricao.Usuario?.Nome ?? "N/A")</td>
-                    <td>@inscricao.DataInscricao?.ToString("dd/MM/yyyy")</td>
-                    <td>@inscricao.Status</td>
-                    <td>
-                        <a href="/inscricoes/detalhes/@inscricao.Id" class="btn btn-info btn-sm">Detalhes</a>
-                        <button @onclick="@(() => CancelarInscricao(inscricao.Id))" class="btn btn-danger btn-sm">Cancelar</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <a href="/inscricoes/criar" class="btn btn-primary">Nova Inscrição</a>
-}
+    <!-- Filtros -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Filtrar por Evento:</label>
+                        <select @bind="filtroEventoId" class="form-control">
+                            <option value="0">Todos os Eventos</option>
+                            @foreach (var evento in eventosDisponiveis)
+                            {
+                                <option value="@evento.Id">@evento.Nome</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Filtrar por Status:</label>
+                        <select @bind="filtroStatus" @bind:event="onchange" class="form-control">
+                            <option value="">Todos</option>
+                            <option value="Confirmada">Confirmada</option>
+                            <option value="Cancelada">Cancelada</option>
+                            <option value="Pendente">Pendente</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Buscar Participante:</label>
+                        <div class="input-group">
+                        <input @bind="filtroParticipante" 
+                            class="form-control" 
+                            placeholder="Nome ou email" 
+                            @onkeyup="@(e => { if (e.Key == "Enter") AplicarFiltros(); })" />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" @onclick="AplicarFiltros" title="Buscar">
+                                <i class="fas fa-search mr-1"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (carregando)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Carregando...</span>
+            </div>
+            <p class="mt-2">Carregando inscrições...</p>
+        </div>
+    }
+    else if (!inscricoesFiltradas.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle mr-2"></i> Nenhuma inscrição encontrada com os filtros atuais.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Evento</th>
+                                <th>Data Evento</th>
+                                <th>Participante</th>
+                                <th>Tamanho Camiseta</th>
+                                <th>Data Inscrição</th>
+                                <th>Status</th>
+                                <th class="text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var inscricao in inscricoesFiltradas)
+                            {
+                                <tr>
+                                    <td>@inscricao.Evento?.Nome</td>
+                                    <td>@inscricao.Evento?.Data?.ToString("dd/MM/yyyy")</td>
+                                    <td>@inscricao.Usuario?.Nome <small class="text-muted d-block">@inscricao.Usuario?.Email</small></td>
+                                    <td>@inscricao.TamanhoCamiseta</td>
+                                    <td>@(inscricao.DataInscricao is DateTime dt ? dt.ToString("dd/MM/yyyy") : "")</td>
+                                    <td>
+                                        <span class="badge @GetBadgeClass(inscricao.Status)" style="font-size: 0.9rem; padding: 0.35em 0.65em;">
+                                            @GetStatusText(inscricao.Status)
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="btn-group" role="group">
+                                            <a href="/inscricoes/detalhes/@inscricao.Id" class="btn btn-info btn-sm" title="Detalhes">
+                                                <i class="fas fa-eye mr-1"></i> Detalhes
+                                            </a>
+                                            @if (inscricao.Status != "Cancelada")
+                                            {
+                                                <button @onclick="@(() => ConfirmarCancelamento(inscricao.Id))" 
+                                                        class="btn btn-danger btn-sm" 
+                                                        title="Cancelar Inscrição">
+                                                    <i class="fas fa-ban mr-1"></i> Cancelar
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-secondary btn-sm" disabled title="Inscrição já cancelada">
+                                                    <i class="fas fa-ban mr-1"></i> Cancelada
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginação -->
+        @if (totalPaginas > 1)
+        {
+            <div class="d-flex justify-content-center mt-3">
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item @(paginaAtual == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="@(() => MudarPagina(1))">
+                                <i class="fas fa-angle-double-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item @(paginaAtual == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="@(() => MudarPagina(paginaAtual - 1))">
+                                <i class="fas fa-angle-left"></i>
+                            </button>
+                        </li>
+
+                        @for (int i = Math.Max(1, paginaAtual - 2); i <= Math.Min(totalPaginas, paginaAtual + 2); i++)
+                        {
+                            <li class="page-item @(i == paginaAtual ? "active" : "")">
+                                <button class="page-link" @onclick="@(() => MudarPagina(i))">@i</button>
+                            </li>
+                        }
+
+                        <li class="page-item @(paginaAtual == totalPaginas ? "disabled" : "")">
+                            <button class="page-link" @onclick="@(() => MudarPagina(paginaAtual + 1))">
+                                <i class="fas fa-angle-right"></i>
+                            </button>
+                        </li>
+                        <li class="page-item @(paginaAtual == totalPaginas ? "disabled" : "")">
+                            <button class="page-link" @onclick="@(() => MudarPagina(totalPaginas))">
+                                <i class="fas fa-angle-double-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+
+    @if (!string.IsNullOrEmpty(mensagemErro))
+    {
+        <div class="alert alert-danger mt-3">
+            <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+        </div>
+    }
+</div>
 
 @code {
     private List<Inscricao> inscricoes = new();
+    private List<Inscricao> inscricoesFiltradas = new();
+    private List<Evento> eventosDisponiveis = new();
+    private bool carregando = true;
+    private string mensagemErro = string.Empty;
+    
+    // Filtros
+    private int filtroEventoId = 0;
+    private string filtroStatus = "";
+    private string filtroParticipante = "";
+    
+    // Paginação
+    private int paginaAtual = 1;
+    private const int itensPorPagina = 10;
+    private int totalPaginas = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        // Carrega todas as inscrições
-        inscricoes = await InscricaoController.ListarInscricoesPorEvento(0); // 0 para todos
+        try
+        {
+            await CarregarDados();
+            AplicarFiltros();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao carregar inscrições: {ex.Message}";
+        }
+        finally
+        {
+            carregando = false;
+        }
     }
 
-    private async Task CancelarInscricao(int id)
+    private async Task CarregarDados()
     {
-        await InscricaoController.CancelarInscricao(id);
-        inscricoes = await InscricaoController.ListarInscricoesPorEvento(0);
+        inscricoes = await InscricaoController.ListarTodasInscricoes();
+        eventosDisponiveis = await EventoController.ListarProximosEventos();
     }
+
+    private void AplicarFiltros()
+    {
+        var query = inscricoes.AsQueryable();
+
+        if (filtroEventoId > 0)
+        {
+            query = query.Where(i => i.EventoId == filtroEventoId);
+        }
+
+        if (!string.IsNullOrEmpty(filtroStatus))
+        {
+            query = query.Where(i => i.Status == filtroStatus);
+        }
+
+        if (!string.IsNullOrEmpty(filtroParticipante))
+        {
+            query = query.Where(i => 
+                i.Usuario.Nome.Contains(filtroParticipante, StringComparison.OrdinalIgnoreCase) ||
+                i.Usuario.Email.Contains(filtroParticipante, StringComparison.OrdinalIgnoreCase));
+        }
+
+        inscricoesFiltradas = query.ToList();
+        totalPaginas = (int)Math.Ceiling((double)inscricoesFiltradas.Count / itensPorPagina);
+        paginaAtual = 1;
+    }
+
+    private IEnumerable<Inscricao> GetInscricoesPagina()
+    {
+        return inscricoesFiltradas
+            .Skip((paginaAtual - 1) * itensPorPagina)
+            .Take(itensPorPagina);
+    }
+
+    private void MudarPagina(int pagina)
+    {
+        paginaAtual = pagina;
+    }
+
+    private async Task ConfirmarCancelamento(int inscricaoId)
+    {
+        var confirmado = await JSRuntime.InvokeAsync<bool>("confirm", 
+            "Tem certeza que deseja cancelar esta inscrição?");
+        
+        if (confirmado)
+        {
+            await CancelarInscricao(inscricaoId);
+        }
+    }
+
+    private async Task CancelarInscricao(int inscricaoId)
+    {
+        try
+        {
+            carregando = true;
+            await InscricaoController.CancelarInscricao(inscricaoId);
+            await CarregarDados();
+            AplicarFiltros();
+            mensagemErro = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao cancelar inscrição: {ex.Message}";
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private string GetBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Confirmada" => "badge-success text-dark",
+            "Cancelada" => "badge-danger text-dark",
+            "Pendente" => "badge-warning text-dark",
+            _ => "badge-secondary text-dark"
+        };
+    }
+
+    private string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Confirmada" => "CONFIRMADA",
+            "Cancelada" => "CANCELADA",
+            "Pendente" => "PENDENTE",
+            _ => status?.ToUpper() ?? "INDEFINIDO"
+        };
+    }
+
+    
+
+    
+
 }

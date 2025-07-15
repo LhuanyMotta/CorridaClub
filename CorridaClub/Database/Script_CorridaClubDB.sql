@@ -15,7 +15,8 @@ CREATE TABLE usuario (
     tipo_membro VARCHAR(20)
 );
 
-SELECT * FROM usuario;
+		
+DELETE FROM usuario;
 
 -- Tabela de eventos
 CREATE TABLE evento (
