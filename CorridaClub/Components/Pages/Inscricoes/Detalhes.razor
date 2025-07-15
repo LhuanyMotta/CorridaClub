@@ -4,30 +4,58 @@
 @inject InscricaoController InscricaoController
 @inject NavigationManager Navigation
 
-<h3>Detalhes da Inscrição</h3>
+<h3 class="mb-4">Detalhes da Inscrição</h3>
 
-@if (inscricao == null)
+@if (carregando)
 {
-    <p>Carregando inscrição...</p>
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Carregando...</span>
+        </div>
+        <p class="mt-2">Carregando inscrição...</p>
+    </div>
+}
+else if (inscricao == null)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle mr-2"></i> Inscrição não encontrada!
+    </div>
 }
 else
 {
-    <div class="card">
+    <div class="card shadow">
         <div class="card-body">
-            <h5 class="card-title">Inscrição #@inscricao.Id</h5>
-            <p class="card-text"><strong>Evento:</strong> @inscricao.Evento?.Nome</p>
-            <p class="card-text"><strong>Participante:</strong> @inscricao.Usuario?.Nome</p>
-            <p class="card-text"><strong>Data Inscrição:</strong> @inscricao.DataInscricao?.ToString("dd/MM/yyyy")</p>
-            <p class="card-text"><strong>Status:</strong> @inscricao.Status</p>
-            <p class="card-text"><strong>Número Peito:</strong> @inscricao.NumeroPeito</p>
-            <p class="card-text"><strong>Camiseta:</strong> @inscricao.TamanhoCamiseta</p>
+            <h5 class="card-title text-primary mb-4">
+                <i class="fas fa-file-alt mr-2"></i> Inscrição #@inscricao.Id
+            </h5>
             
-            <button @onclick="(() => CancelarInscricao(inscricao.Id))" 
-                    class="btn btn-danger"
-                    disabled="@(inscricao.Status == "Cancelada")">
-                Cancelar Inscrição
-            </button>
-            <a href="/inscricoes" class="btn btn-secondary">Voltar</a>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="card-text"><strong><i class="fas fa-calendar-alt mr-2"></i> Evento:</strong> @inscricao.Evento?.Nome</p>
+                    <p class="card-text"><strong><i class="fas fa-user mr-2"></i> Participante:</strong> @inscricao.Usuario?.Nome</p>
+                    <p class="card-text"><strong><i class="fas fa-envelope mr-2"></i> Email:</strong> @inscricao.Usuario?.Email</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="card-text"><strong><i class="fas fa-calendar-day mr-2"></i> Data Inscrição:</strong> @inscricao.DataInscricao?.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p class="card-text"><strong><i class="fas fa-info-circle mr-2"></i> Status:</strong> 
+                        <span class="badge @GetBadgeClass(inscricao.Status)">
+                            @GetStatusText(inscricao.Status)
+                        </span>
+                    </p>
+                    <p class="card-text"><strong><i class="fas fa-tshirt mr-2"></i> Camiseta:</strong> @inscricao.TamanhoCamiseta</p>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex">
+                <button @onclick="(() => CancelarInscricao(inscricao.Id))" 
+                        class="btn btn-danger mr-2"
+                        disabled="@(inscricao.Status == "Cancelada")">
+                    <i class="fas fa-ban mr-1"></i> @(inscricao.Status == "Cancelada" ? "Inscrição Cancelada" : "Cancelar Inscrição")
+                </button>
+                <a href="/inscricoes" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i> Voltar
+                </a>
+            </div>
         </div>
     </div>
 }
@@ -37,16 +65,57 @@ else
     public int Id { get; set; }
 
     private Inscricao? inscricao;
+    private bool carregando = true;
 
     protected override async Task OnInitializedAsync()
     {
-        var inscricoes = await InscricaoController.ListarInscricoesPorEvento(0);
-        inscricao = inscricoes.FirstOrDefault(i => i.Id == Id);
+        try
+        {
+            inscricao = await InscricaoController.ObterInscricaoCompleta(Id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar inscrição: {ex.Message}");
+        }
+        finally
+        {
+            carregando = false;
+        }
     }
 
     private async Task CancelarInscricao(int id)
     {
-        await InscricaoController.CancelarInscricao(id);
-        Navigation.NavigateTo("/inscricoes", forceLoad: true);
+        try
+        {
+            await InscricaoController.CancelarInscricao(id);
+            // Atualiza os dados após cancelamento
+            inscricao = await InscricaoController.ObterInscricaoCompleta(Id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao cancelar inscrição: {ex.Message}");
+        }
+    }
+
+    private string GetBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Confirmada" => "badge bg-success",
+            "Cancelada" => "badge bg-danger",
+            "Pendente" => "badge bg-warning",
+            _ => "badge bg-secondary"
+        };
+    }
+
+    private string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Confirmada" => "CONFIRMADA",
+            "Cancelada" => "CANCELADA",
+            "Pendente" => "PENDENTE",
+            _ => status?.ToUpper() ?? "INDEFINIDO"
+        };
     }
 }
