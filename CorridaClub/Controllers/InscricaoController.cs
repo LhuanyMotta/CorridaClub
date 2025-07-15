@@ -37,5 +37,14 @@ namespace CorridaClub.Controllers
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<Inscricao>> ListarTodasInscricoes()
+        {
+            return await _context.Inscricoes
+                .Include(i => i.Evento)
+                .Include(i => i.Usuario)
+                .OrderByDescending(i => i.DataInscricao)
+                .ToListAsync();
+        }
     }
 }
