@@ -6,131 +6,276 @@
 @inject UsuarioController UsuarioController
 @inject NavigationManager Navigation
 
-<div class="container">
-    <h1 class="my-4 text-primary text-center"><i class="fas fa-shopping-cart mr-2"></i> NOVO PEDIDO</h1>
-    
-    <div class="card shadow">
-        <div class="card-body">
-            @if (usuarios == null)
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Cadastrar <span class="highlight">Novo Pedido</span></h1>
+            <p class="subtitle">Preencha os dados abaixo para criar um novo pedido</p>
+        </div>
+
+        @if (usuarios == null)
+        {
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Carregando...</span>
+                </div>
+                <p class="mt-2">Carregando clientes...</p>
+            </div>
+        }
+        else
+        {
+            <!-- Mensagem de erro geral -->
+            @if (!string.IsNullOrEmpty(mensagemErro))
             {
-                <div class="text-center">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="sr-only">Carregando...</span>
-                    </div>
-                    <p class="mt-2">Carregando clientes...</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
                 </div>
             }
-            else
-            {
-                <!-- Mensagem de erro geral -->
-                @if (!string.IsNullOrEmpty(mensagemErro))
-                {
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
-                    </div>
-                }
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Cliente:</label>
-                            <select @bind="novoPedido.UsuarioId" class="form-control @(erros.ContainsKey("UsuarioId") ? "is-invalid" : "")">
-                                <option value="">Selecione um cliente</option>
-                                @foreach (var usuario in usuarios)
-                                {
-                                    <option value="@usuario.Id">@usuario.Nome (@usuario.Email)</option>
-                                }
-                            </select>
-                            @if (erros.ContainsKey("UsuarioId"))
+            <div class="form-container">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cliente:</label>
+                        <select @bind="novoPedido.UsuarioId" class="form-control @(erros.ContainsKey("UsuarioId") ? "is-invalid" : "")">
+                            <option value="">Selecione um cliente</option>
+                            @foreach (var usuario in usuarios)
                             {
-                                <div class="invalid-feedback">@erros["UsuarioId"]</div>
+                                <option value="@usuario.Id">@usuario.Nome (@usuario.Email)</option>
                             }
-                        </div>
+                        </select>
+                        @if (erros.ContainsKey("UsuarioId"))
+                        {
+                            <div class="invalid-feedback">@erros["UsuarioId"]</div>
+                        }
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Item:</label>
-                            <select @bind="novoPedido.Item" class="form-control @(erros.ContainsKey("Item") ? "is-invalid" : "")">
-                                <option value="">Selecione um item</option>
-                                <option value="Camiseta">Camiseta</option>
-                                <option value="Tênis">Tênis</option>
-                                <option value="Medalha">Medalha</option>
-                                <option value="Kit Corrida">Kit Corrida</option>
-                            </select>
-                            @if (erros.ContainsKey("Item"))
-                            {
-                                <div class="invalid-feedback">@erros["Item"]</div>
-                            }
-                        </div>
+
+                    <div class="form-group">
+                        <label>Item:</label>
+                        <select @bind="novoPedido.Item" class="form-control @(erros.ContainsKey("Item") ? "is-invalid" : "")">
+                            <option value="">Selecione um item</option>
+                            <option value="Camiseta">Camiseta</option>
+                            <option value="Tênis">Tênis</option>
+                            <option value="Medalha">Medalha</option>
+                            <option value="Kit Corrida">Kit Corrida</option>
+                        </select>
+                        @if (erros.ContainsKey("Item"))
+                        {
+                            <div class="invalid-feedback">@erros["Item"]</div>
+                        }
                     </div>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Tamanho:</label>
-                            <select @bind="novoPedido.Tamanho" class="form-control @(erros.ContainsKey("Tamanho") ? "is-invalid" : "")">
-                                <option value="">Selecione o tamanho</option>
-                                <option value="P">P</option>
-                                <option value="M">M</option>
-                                <option value="G">G</option>
-                                <option value="GG">GG</option>
-                                <option value="Único">Único</option>
-                            </select>
-                            @if (erros.ContainsKey("Tamanho"))
-                            {
-                                <div class="invalid-feedback">@erros["Tamanho"]</div>
-                            }
-                        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tamanho:</label>
+                        <select @bind="novoPedido.Tamanho" class="form-control @(erros.ContainsKey("Tamanho") ? "is-invalid" : "")">
+                            <option value="">Selecione o tamanho</option>
+                            <option value="P">P</option>
+                            <option value="M">M</option>
+                            <option value="G">G</option>
+                            <option value="GG">GG</option>
+                            <option value="Único">Único</option>
+                        </select>
+                        @if (erros.ContainsKey("Tamanho"))
+                        {
+                            <div class="invalid-feedback">@erros["Tamanho"]</div>
+                        }
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Quantidade:</label>
-                            <input @bind="novoPedido.Quantidade" type="number" min="1" 
-                                   class="form-control @(erros.ContainsKey("Quantidade") ? "is-invalid" : "")" />
-                            @if (erros.ContainsKey("Quantidade"))
-                            {
-                                <div class="invalid-feedback">@erros["Quantidade"]</div>
-                            }
-                        </div>
+
+                    <div class="form-group">
+                        <label>Quantidade:</label>
+                        <input @bind="novoPedido.Quantidade" type="number" min="1"
+                               class="form-control @(erros.ContainsKey("Quantidade") ? "is-invalid" : "")" />
+                        @if (erros.ContainsKey("Quantidade"))
+                        {
+                            <div class="invalid-feedback">@erros["Quantidade"]</div>
+                        }
                     </div>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Status:</label>
-                            <input type="text" class="form-control" value="Pendente" disabled />
-                        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <input type="text" class="form-control" value="Pendente" disabled />
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Data do Pedido:</label>
-                            <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" disabled />
-                        </div>
+
+                    <div class="form-group">
+                        <label>Data do Pedido:</label>
+                        <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" disabled />
                     </div>
                 </div>
 
-                <div class="mt-4 d-flex">
-                    <button class="btn btn-primary mr-2" @onclick="SalvarPedido" disabled="@salvando">
+                <div class="action-buttons">
+                    <button class="action-btn" @onclick="SalvarPedido" disabled="@salvando">
                         @if (salvando)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span class="ml-2">Salvando...</span>
+                            <span>Salvando...</span>
                         }
                         else
                         {
-                            <i class="fas fa-save mr-1"></i> <span class="ml-2"> Salvar Pedido</span>
+                            <span class="btn-icon">💾</span>
+                            <span class="btn-text">@(erros.Count > 0 ? "Corrija os erros" : "Salvar Pedido")</span>
                         }
                     </button>
-                    <a href="/pedidos" class="btn btn-outline-secondary">
-                        <i class="fas fa-times mr-1"></i> Cancelar
+                    <a href="/pedidos" class="action-btn cancel-btn">
+                        <span class="btn-icon">❌</span>
+                        <span class="btn-text">Cancelar</span>
                     </a>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
 </div>
+
+<style>
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        max-width: 900px;
+        width: 100%;
+    }
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .form-container {
+        margin-top: 1.5rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        text-decoration: none;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(251, 140, 0, 0.3);
+        border: none;
+        cursor: pointer;
+        min-width: 180px;
+    }
+
+        .action-btn:hover {
+            background-color: white;
+            color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(251, 140, 0, 0.4);
+            border: 2px solid var(--secondary-color);
+        }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+        .cancel-btn:hover {
+            background-color: white;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+    .btn-icon {
+        font-size: 1.5rem;
+        margin-right: 0.8rem;
+    }
+
+    .btn-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f5c6cb;
+    }
+
+    .text-center {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+</style>
 
 @code {
     private List<Usuario>? usuarios;
@@ -161,7 +306,7 @@
         salvando = true;
         erros.Clear();
         mensagemErro = string.Empty;
-        
+
         // Validações
         ValidarCampos();
 
