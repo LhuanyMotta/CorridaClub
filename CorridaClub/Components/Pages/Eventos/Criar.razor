@@ -5,142 +5,284 @@
 @inject EventoController EventoController
 @inject NavigationManager Navigation
 
-<div class="container">
-    <h1 class="my-4 text-primary text-center"><i class="fas fa-calendar-plus mr-2"></i> CRIAR NOVO EVENTO</h1>
-    
-    <div class="card shadow">
-        <div class="card-body">
-            <!-- Mensagem de erro geral -->
-            @if (!string.IsNullOrEmpty(mensagemErro))
-            {
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
-                </div>
-            }
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Cadastrar <span class="highlight">Novo Evento</span></h1>
+            <p class="subtitle">Preencha os dados abaixo para criar um novo evento</p>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Nome do Evento:</label>
-                        <input @bind="novoEvento.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")" 
-                               placeholder="Digite o nome do evento" />
-                        @if (erros.ContainsKey("Nome"))
-                        {
-                            <div class="invalid-feedback">@erros["Nome"]</div>
-                        }
-                    </div>
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+            </div>
+        }
+
+        <div class="form-container">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome do Evento:</label>
+                    <input @bind="novoEvento.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")"
+                           placeholder="Ex: Corrida da Cidade" />
+                    @if (erros.ContainsKey("Nome"))
+                    {
+                        <div class="invalid-feedback">@erros["Nome"]</div>
+                    }
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Data:</label>
-                        <input @bind="novoEvento.Data" type="datetime-local" 
-                               class="form-control @(erros.ContainsKey("Data") ? "is-invalid" : "")" />
-                        @if (erros.ContainsKey("Data"))
-                        {
-                            <div class="invalid-feedback">@erros["Data"]</div>
-                        }
-                    </div>
+
+                <div class="form-group">
+                    <label>Data e Hora:</label>
+                    <input @bind="novoEvento.Data" type="datetime-local"
+                           class="form-control @(erros.ContainsKey("Data") ? "is-invalid" : "")" />
+                    @if (erros.ContainsKey("Data"))
+                    {
+                        <div class="invalid-feedback">@erros["Data"]</div>
+                    }
                 </div>
             </div>
 
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Local:</label>
-                        <input @bind="novoEvento.Local" class="form-control @(erros.ContainsKey("Local") ? "is-invalid" : "")" 
-                               placeholder="Digite o local do evento" />
-                        @if (erros.ContainsKey("Local"))
-                        {
-                            <div class="invalid-feedback">@erros["Local"]</div>
-                        }
-                    </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Local:</label>
+                    <input @bind="novoEvento.Local" class="form-control @(erros.ContainsKey("Local") ? "is-invalid" : "")"
+                           placeholder="Ex: Parque Central" />
+                    @if (erros.ContainsKey("Local"))
+                    {
+                        <div class="invalid-feedback">@erros["Local"]</div>
+                    }
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Distância (km):</label>
-                        <input @bind="novoEvento.Distancia" type="number" step="0.1"
-                               class="form-control @(erros.ContainsKey("Distancia") ? "is-invalid" : "")" 
-                               placeholder="Ex: 5, 10, 21.1" />
-                        @if (erros.ContainsKey("Distancia"))
-                        {
-                            <div class="invalid-feedback">@erros["Distancia"]</div>
-                        }
-                    </div>
+
+                <div class="form-group">
+                    <label>Distância (km):</label>
+                    <input @bind="novoEvento.Distancia" type="number" step="0.1"
+                           class="form-control @(erros.ContainsKey("Distancia") ? "is-invalid" : "")"
+                           placeholder="Ex: 5, 10, 21.1" />
+                    @if (erros.ContainsKey("Distancia"))
+                    {
+                        <div class="invalid-feedback">@erros["Distancia"]</div>
+                    }
                 </div>
             </div>
 
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Tipo de Corrida:</label>
-                        <select @bind="novoEvento.Tipo" class="form-control @(erros.ContainsKey("Tipo") ? "is-invalid" : "")">
-                            <option value="">Selecione o tipo</option>
-                            <option value="5km">5km</option>
-                            <option value="10km">10km</option>
-                            <option value="Meia Maratona">Meia Maratona (21km)</option>
-                            <option value="Maratona">Maratona (42km)</option>
-                        </select>
-                        @if (erros.ContainsKey("Tipo"))
-                        {
-                            <div class="invalid-feedback">@erros["Tipo"]</div>
-                        }
-                    </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tipo de Corrida:</label>
+                    <select @bind="novoEvento.Tipo" class="form-control @(erros.ContainsKey("Tipo") ? "is-invalid" : "")">
+                        <option value="">Selecione...</option>
+                        <option value="5km">5km</option>
+                        <option value="10km">10km</option>
+                        <option value="Meia Maratona">Meia Maratona (21km)</option>
+                        <option value="Maratona">Maratona (42km)</option>
+                    </select>
+                    @if (erros.ContainsKey("Tipo"))
+                    {
+                        <div class="invalid-feedback">@erros["Tipo"]</div>
+                    }
                 </div>
-                
-            </div>
 
-            <div class="row mt-3">
-                <div class="col-12">
-                    <div class="form-group">
-                        <label class="font-weight-bold">Descrição:</label>
-                        <textarea @bind="novoEvento.Descricao" class="form-control @(erros.ContainsKey("Descricao") ? "is-invalid" : "")" 
-                                  rows="3" placeholder="Descreva o evento"></textarea>
-                        @if (erros.ContainsKey("Descricao"))
-                        {
-                            <div class="invalid-feedback">@erros["Descricao"]</div>
-                        }
-                    </div>
+                <div class="form-group">
+                    <label>Descrição:</label>
+                    <textarea @bind="novoEvento.Descricao" class="form-control @(erros.ContainsKey("Descricao") ? "is-invalid" : "")"
+                              rows="3" placeholder="Descreva o evento"></textarea>
+                    @if (erros.ContainsKey("Descricao"))
+                    {
+                        <div class="invalid-feedback">@erros["Descricao"]</div>
+                    }
                 </div>
             </div>
 
-            <div class="mt-4 d-flex">
+            <div class="action-buttons">
                 @if (!cadastroSucesso)
                 {
-                    <button class="btn btn-primary mr-2" @onclick="SalvarEvento" disabled="@salvando">
+                    <button class="action-btn" @onclick="SalvarEvento" disabled="@salvando">
                         @if (salvando)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span class="ml-2">Salvando...</span>
+                            <span>Salvando...</span>
                         }
                         else
                         {
-                            <i class="fas fa-save"></i> @(erros.Count > 0 ? "Corrija os erros" : "Salvar")
+                            <span class="btn-icon">📅</span>
+                            <span class="btn-text">@(erros.Count > 0 ? "Corrija os erros" : "Salvar")</span>
                         }
                     </button>
-                    <a href="/eventos" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Cancelar
+                    <a href="/eventos" class="action-btn cancel-btn">
+                        <span class="btn-icon">❌</span>
+                        <span class="btn-text">Cancelar</span>
                     </a>
                 }
                 else
                 {
-                    <div class="alert alert-success d-flex align-items-center w-100" role="alert">
-                        <i class="fas fa-check-circle fa-2x mr-3"></i>
+                    <div class="success-message">
+                        <span class="btn-icon">✅</span>
                         <div>
-                            <h4 class="alert-heading">Sucesso!</h4>
-                            <p class="mb-0">Evento cadastrado com sucesso.</p>
+                            <h4>Sucesso!</h4>
+                            <p>Evento cadastrado com sucesso.</p>
                         </div>
                     </div>
-                    <a href="/eventos" class="btn btn-success ml-auto">
-                        <i class="fas fa-list"></i> Ver Eventos
+                    <a href="/eventos" class="action-btn">
+                        <span class="btn-icon">📋</span>
+                        <span class="btn-text">Ver Eventos</span>
                     </a>
-                    <button class="btn btn-primary ml-2" @onclick="NovoEvento">
-                        <i class="fas fa-plus"></i> Novo Evento
-                    </button>
                 }
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        max-width: 900px;
+        width: 100%;
+    }
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .form-container {
+        margin-top: 1.5rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        text-decoration: none;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(251, 140, 0, 0.3);
+        border: none;
+        cursor: pointer;
+        min-width: 180px;
+    }
+
+        .action-btn:hover {
+            background-color: white;
+            color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(251, 140, 0, 0.4);
+            border: 2px solid var(--secondary-color);
+        }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+        .cancel-btn:hover {
+            background-color: white;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+    .btn-icon {
+        font-size: 1.5rem;
+        margin-right: 0.8rem;
+    }
+
+    .btn-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .success-message {
+        display: flex;
+        align-items: center;
+        background-color: #d4edda;
+        color: #155724;
+        padding: 1.2rem;
+        border-radius: 8px;
+        flex: 1;
+    }
+
+        .success-message h4 {
+            margin-bottom: 0.3rem;
+            font-weight: 700;
+        }
+
+        .success-message p {
+            margin-bottom: 0;
+        }
+</style>
 
 @code {
     private Evento novoEvento = new();
@@ -154,8 +296,7 @@
         salvando = true;
         erros.Clear();
         mensagemErro = string.Empty;
-        
-        // Validações
+
         ValidarCampos();
 
         if (erros.Count == 0)
@@ -168,7 +309,6 @@
             catch (Exception ex)
             {
                 mensagemErro = $"Erro ao salvar evento: {ex.Message}";
-                Console.WriteLine(mensagemErro);
             }
         }
         else
@@ -180,52 +320,25 @@
         StateHasChanged();
     }
 
-    private void NovoEvento()
-    {
-        cadastroSucesso = false;
-        novoEvento = new();
-        StateHasChanged();
-    }
-
     private void ValidarCampos()
     {
-        // Validação do Nome
         if (string.IsNullOrWhiteSpace(novoEvento.Nome))
-        {
             erros["Nome"] = "O nome do evento é obrigatório.";
-        }
         else if (novoEvento.Nome.Length < 5)
-        {
             erros["Nome"] = "O nome deve ter pelo menos 5 caracteres.";
-        }
 
-        // Validação da Data
         if (novoEvento.Data == default)
-        {
             erros["Data"] = "A data do evento é obrigatória.";
-        }
         else if (novoEvento.Data < DateTime.Now)
-        {
-            erros["Data"] = "A data do evento deve ser futura.";
-        }
+            erros["Data"] = "A data deve ser futura.";
 
-        // Validação do Local
         if (string.IsNullOrWhiteSpace(novoEvento.Local))
-        {
             erros["Local"] = "O local do evento é obrigatório.";
-        }
 
-        // Validação da Distância
         if (novoEvento.Distancia <= 0)
-        {
             erros["Distancia"] = "A distância deve ser maior que zero.";
-        }
 
-        // Validação do Tipo
         if (string.IsNullOrWhiteSpace(novoEvento.Tipo))
-        {
             erros["Tipo"] = "O tipo de corrida é obrigatório.";
-        }
-        
     }
 }
