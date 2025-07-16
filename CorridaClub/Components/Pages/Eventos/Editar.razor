@@ -1,4 +1,4 @@
-﻿@page "/eventos/editar/{id:int}"
+@page "/eventos/editar/{id:int}"
 @rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
@@ -89,7 +89,7 @@
 </div>
 
 <style>
-    /* Mantenha todos os estilos CSS anteriores */
+
     .home-container {
         background-color: var(--background);
         display: flex;
@@ -291,7 +291,7 @@
 
         try
         {
-            // Validações básicas
+
             if (string.IsNullOrWhiteSpace(evento.Nome))
             {
                 mensagemErro = "O nome do evento é obrigatório.";

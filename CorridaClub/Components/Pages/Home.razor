@@ -32,6 +32,15 @@
     </div>
 </div>
 
+<div class="footer">
+    <p>© @DateTime.Now.Year CorridaClub - Todos os direitos reservados</p>
+    <p class="developers">
+        Desenvolvido por
+        <a href="https://github.com/LhuanyMotta" target="_blank">Lhuany Motta</a> e
+        <a href="https://github.com/Lucas-S-Guilherme" target="_blank">Lucas Guilherme</a>
+    </p>
+</div>
+
 <style>
     .home-container {
         background-color: var(--background);
@@ -39,6 +48,7 @@
         justify-content: center;
         align-items: center;
         padding: 3rem 0;
+        min-height: calc(100vh - 100px);
     }
 
     .home-card {
@@ -111,5 +121,29 @@
         font-size: 1.3rem;
         font-weight: 600;
         font-family: var(--font-heading);
+    }
+
+    .footer {
+        background-color: #E65100;
+        color: white;
+        text-align: center;
+        padding: 1.5rem;
+        font-size: 0.9rem;
+    }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+            .footer a:hover {
+                color: #FFCC80;
+                text-decoration: underline;
+            }
+
+    .developers {
+        margin-top: 0.5rem;
     }
 </style>
