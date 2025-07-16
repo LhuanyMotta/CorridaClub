@@ -1,50 +1,305 @@
 ﻿@page "/eventos"
+@rendermode InteractiveServer
 @using CorridaClub.Controllers
 @using CorridaClub.Models
 @inject EventoController EventoController
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<h3>Lista de Eventos</h3>
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Lista de <span class="highlight">Eventos</span></h1>
+            <p class="subtitle">Gerencie os eventos de corrida</p>
+        </div>
 
-@if (eventos == null)
-{
-    <p>Carregando eventos...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Data</th>
-                <th>Local</th>
-                <th>Distância</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var evento in eventos)
-            {
-                <tr>
-                    <td>@evento.Nome</td>
-                    <td>@evento.Data?.ToString("dd/MM/yyyy")</td>
-                    <td>@evento.Local</td>
-                    <td>@evento.Distancia km</td>
-                    <td>
-                        <a href="/eventos/detalhes/@evento.Id" class="btn btn-info btn-sm">Detalhes</a>
-                        <a href="/eventos/editar/@evento.Id" class="btn btn-warning btn-sm">Editar</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <a href="/eventos/criar" class="btn btn-primary">Novo Evento</a>
-}
+        <div class="action-buttons">
+            <a href="/eventos/criar" class="action-btn">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">Novo Evento</span>
+            </a>
+        </div>
+
+        @if (eventos == null)
+        {
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Carregando eventos...</p>
+            </div>
+        }
+        else if (!eventos.Any())
+        {
+            <div class="empty-state">
+                <span class="btn-icon">🏁</span>
+                <p>Nenhum evento cadastrado.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-container">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data</th>
+                            <th>Local</th>
+                            <th>Distância</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var evento in eventos)
+                        {
+                            <tr>
+                                <td>@evento.Nome</td>
+                                <td>@evento.Data?.ToString("dd/MM/yyyy")</td>
+                                <td>@evento.Local</td>
+                                <td>@evento.Distancia km</td>
+                                <td class="actions">
+                                    <a href="/eventos/detalhes/@evento.Id" class="table-btn info">
+                                        <span class="btn-icon">👁️</span>
+                                    </a>
+                                    <a href="/eventos/editar/@evento.Id" class="table-btn warning">
+                                        <span class="btn-icon">✏️</span>
+                                    </a>
+                                    <button @onclick="@(async () => await ConfirmarRemocao(evento.Id))"
+                                            class="table-btn danger">
+                                        <span class="btn-icon">🗑️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        max-width: 1200px;
+        width: 100%;
+    }
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 2rem;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+        .action-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+    .table-container {
+        overflow-x: auto;
+        margin-top: 1.5rem;
+    }
+
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .user-table th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .user-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .table-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .table-btn:hover {
+            transform: scale(1.1);
+        }
+
+    .info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .warning {
+        background-color: #ffc107;
+        color: white;
+    }
+
+    .danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        color: var(--text-dark);
+    }
+
+        .empty-state .btn-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid var(--primary-color);
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 
 @code {
-    private List<Evento> eventos = new();
+    private List<Evento> eventos;
+    private string mensagemErro = string.Empty;
+    private bool removendo = false;
 
     protected override async Task OnInitializedAsync()
     {
-        eventos = await EventoController.ListarProximosEventos();
+        await CarregarEventos();
+    }
+
+    private async Task CarregarEventos()
+    {
+        try
+        {
+            eventos = await EventoController.ListarEventos();
+            mensagemErro = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao carregar eventos: {ex.Message}";
+        }
+    }
+
+    private async Task ConfirmarRemocao(int id)
+    {
+        var evento = eventos.FirstOrDefault(e => e.Id == id);
+        if (evento == null) return;
+
+        var confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Tem certeza que deseja remover o evento {evento.Nome}? Esta ação não pode ser desfeita.");
+
+        if (confirmado)
+        {
+            await RemoverEvento(id);
+        }
+    }
+
+    private async Task RemoverEvento(int id)
+    {
+        removendo = true;
+        try
+        {
+            await EventoController.Remover(id);
+            await CarregarEventos();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao remover evento: {ex.Message}";
+        }
+        finally
+        {
+            removendo = false;
+        }
     }
 }
