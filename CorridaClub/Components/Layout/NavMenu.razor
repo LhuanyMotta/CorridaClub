@@ -58,14 +58,14 @@
         text-decoration: none;
         font-family: var(--font-heading);
         font-weight: 700;
-        font-size: 1.4rem;
+        font-size: 1.6rem;
         display: flex;
         align-items: center;
         gap: 12px;
     }
 
     .app-icon {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
     }
 
     .nav-scrollable {
@@ -99,11 +99,12 @@
 
         .nav-link:hover {
             background-color: var(--light-orange);
+            color: var(--text-dark) !important; /* Força a cor do texto a permanecer escura */
         }
 
         .nav-link.active {
             background-color: var(--secondary-color);
-            color: white;
+            color: white !important;
             font-weight: 600;
         }
 

@@ -5,67 +5,80 @@
 @inject PedidoController PedidoController
 @inject NavigationManager Navigation
 
-<div class="container">
-    @if (carregando)
-    {
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Carregando...</span>
+<div class="home-container">
+    <div class="home-card">
+        @if (carregando)
+        {
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Carregando...</span>
+                </div>
+                <p class="mt-2">Carregando pedido...</p>
             </div>
-            <p class="mt-2">Carregando pedido...</p>
-        </div>
-    }
-    else if (pedido == null)
-    {
-        <div class="alert alert-danger">
-            <i class="fas fa-exclamation-triangle mr-2"></i> Pedido não encontrado
-        </div>
-        <a href="/pedidos" class="btn btn-secondary">Voltar para lista</a>
-    }
-    else
-    {
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><i class="fas fa-file-invoice mr-2"></i> Detalhes do Pedido #@pedido.Id</h1>
-            <a href="/pedidos" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left mr-1"></i> Voltar
+        }
+        else if (pedido == null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle mr-2"></i> Pedido não encontrado
+            </div>
+            <a href="/pedidos" class="action-btn cancel-btn">
+                <span class="btn-icon">⬅️</span>
+                <span class="btn-text">Voltar para lista</span>
             </a>
-        </div>
+        }
+        else
+        {
+            <div class="header">
+                <h1>Detalhes do <span class="highlight">Pedido #@pedido.Id</span></h1>
+                <p class="subtitle">Visualize e gerencie os detalhes deste pedido</p>
+            </div>
 
-        <div class="card shadow">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <h5 class="text-primary"><i class="fas fa-user mr-2"></i> Cliente</h5>
-                            <p class="ml-4">@pedido.Usuario?.Nome</p>
-                            <p class="ml-4 text-muted">@pedido.Usuario?.Email</p>
-                        </div>
-
-                        <div class="mb-3">
-                            <h5 class="text-primary"><i class="fas fa-box mr-2"></i> Item</h5>
-                            <p class="ml-4">@pedido.Item (@pedido.Tamanho)</p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <h5 class="text-primary"><i class="fas fa-info-circle mr-2"></i> Informações</h5>
-                            <p class="ml-4"><strong>Quantidade:</strong> @pedido.Quantidade</p>
-                            <p class="ml-4"><strong>Data:</strong> @(pedido.DataPedido != null ? pedido.DataPedido?.ToString("dd/MM/yyyy") : "-")</p>
-                            <p class="ml-4">
-                                <strong>Status:</strong> 
-                                <span class="badge @GetBadgeClass(pedido.Status)">
-                                    @pedido.Status
-                                </span>
-                            </p>
-                        </div>
+            <div class="detail-container">
+                <div class="detail-section">
+                    <h3 class="detail-title">
+                        <span class="detail-icon">👤</span>
+                        Cliente
+                    </h3>
+                    <div class="detail-content">
+                        <p class="detail-text">@pedido.Usuario?.Nome</p>
+                        <p class="detail-subtext">@pedido.Usuario?.Email</p>
                     </div>
                 </div>
 
-                <div class="mt-4 border-top pt-3">
-                    <h5 class="text-primary"><i class="fas fa-sync-alt mr-2"></i> Alterar Status</h5>
-                    <div class="row">
-                        <div class="col-md-6">
+                <div class="detail-section">
+                    <h3 class="detail-title">
+                        <span class="detail-icon">📦</span>
+                        Item
+                    </h3>
+                    <div class="detail-content">
+                        <p class="detail-text">@pedido.Item (@pedido.Tamanho)</p>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-title">
+                        <span class="detail-icon">ℹ️</span>
+                        Informações
+                    </h3>
+                    <div class="detail-content">
+                        <p class="detail-text"><strong>Quantidade:</strong> @pedido.Quantidade</p>
+                        <p class="detail-text"><strong>Data:</strong> @(pedido.DataPedido != null ? pedido.DataPedido?.ToString("dd/MM/yyyy") : "-")</p>
+                        <p class="detail-text">
+                            <strong>Status:</strong> 
+                            <span class="status-badge @GetBadgeClass(pedido.Status)">
+                                @pedido.Status
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="status-update">
+                    <h3 class="detail-title">
+                        <span class="detail-icon">🔄</span>
+                        Alterar Status
+                    </h3>
+                    <div class="form-row">
+                        <div class="form-group">
                             <select class="form-control" @bind="novoStatus">
                                 <option value="Pendente">Pendente</option>
                                 <option value="Processando">Processando</option>
@@ -74,27 +87,250 @@
                                 <option value="Cancelado">Cancelado</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <button @onclick="(() => AtualizarStatus(pedido.Id))"
-                                    class="btn btn-primary"
-                                    disabled="@(pedido.Status == novoStatus || atualizando)">
-                                @if (atualizando)
-                                {
-                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                    <span class="ml-2">Atualizando...</span>
-                                }
-                                else
-                                {
-                                    <i class="fas fa-save mr-1"></i> <span>Atualizar Status</span>
-                                }
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    }
+            
+            <div class="action-buttons">
+                <button @onclick="(() => AtualizarStatus(pedido.Id))"
+                    class="action-btn"
+                    disabled="@(pedido.Status == novoStatus || atualizando)">
+                    @if (atualizando)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                        <span>Atualizando...</span>
+                    }
+                    else
+                    {
+                        <span class="btn-icon">💾</span>
+                        <span class="btn-text">Salvar Alterações</span>
+                    }
+                    </button>
+                    
+                    <a href="/pedidos" class="action-btn cancel-btn">
+                        <span class="btn-icon">✖</span>
+                        <span class="btn-text">Cancelar</span>
+                    </a>
+            </div>
+        }
+    </div>
 </div>
+
+<style>
+    /* Estilos base do home-container e home-card (mantidos do anterior) */
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        max-width: 900px;
+        width: 100%;
+    }
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    /* Estilos específicos para a página de detalhes */
+    .detail-container {
+        margin-top: 2rem;
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .detail-title {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-icon {
+        margin-right: 1rem;
+        font-size: 1.8rem;
+    }
+
+    .detail-content {
+        margin-left: 3rem;
+    }
+
+    .detail-text {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .detail-subtext {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .status-update {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #eee;
+    }
+
+    /* Classes para os status */
+    .bg-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .bg-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .bg-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .bg-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .bg-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .bg-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    /* Mantendo os estilos dos botões consistentes */
+    .action-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        justify-content: flex-start; /* Alinha os itens à esquerda */
+        width: 100%; /* Garante que o container ocupe toda a largura */
+        padding: 0; /* Remove qualquer padding extra */
+    }
+
+    .action-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(251, 140, 0, 0.3);
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn:hover {
+        background-color: white;
+        color: var(--secondary-color);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(251, 140, 0, 0.4);
+        border: 2px solid var(--secondary-color);
+    }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    .cancel-btn:hover {
+        background-color: white;
+        color: #6c757d;
+        border: 2px solid #6c757d;
+    }
+
+    .btn-icon {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    .btn-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f5c6cb;
+    }
+
+    .text-center {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    /* Mantendo os estilos do formulário consistentes */
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+</style>
 
 @code {
     [Parameter]
@@ -148,12 +384,12 @@
     {
         return status switch
         {
-            "Pendente" => "badge bg-warning text-dark",
-            "Processando" => "badge bg-info text-white",
-            "Enviado" => "badge bg-primary text-white",
-            "Entregue" => "badge bg-success text-white",
-            "Cancelado" => "badge bg-danger text-white",
-            _ => "badge bg-secondary text-white"
+            "Pendente" => "bg-warning",
+            "Processando" => "bg-info",
+            "Enviado" => "bg-primary",
+            "Entregue" => "bg-success",
+            "Cancelado" => "bg-danger",
+            _ => "bg-secondary"
         };
     }
 }
