@@ -4,24 +4,60 @@
 @using CorridaClub.Models
 @inject EventoController EventoController
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<div class="container">
-    <h1 class="my-4 text-primary text-center"><i class="fas fa-calendar-edit mr-2"></i> EDITAR EVENTO</h1>
-    
-    <div class="card shadow">
-        <div class="card-body">
-            @if (evento == null)
-            {
-                <div class="text-center">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="sr-only">Carregando...</span>
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Editar <span class="highlight">Evento</span></h1>
+            <p class="subtitle">Atualize os dados do evento de corrida</p>
+        </div>
+
+        @if (evento == null)
+        {
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Carregando evento...</p>
+            </div>
+        }
+        else
+        {
+            <form class="form-container" @onsubmit="HandleSubmit">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nome">Nome do Evento</label>
+                        <input type="text" id="nome" class="form-input" @bind="evento.Nome" required />
                     </div>
-                    <p class="mt-2">Carregando evento...</p>
                 </div>
-            }
-            else
-            {
-                <!-- Mensagem de erro geral -->
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="data">Data do Evento</label>
+                        <input type="date" id="data" class="form-input" @bind="evento.Data" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="local">Local</label>
+                        <input type="text" id="local" class="form-input" @bind="evento.Local" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="distancia">Distância (km)</label>
+                        <input type="number" id="distancia" class="form-input" @bind="evento.Distancia" step="0.1" min="0" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="descricao">Descrição</label>
+                        <textarea id="descricao" class="form-input" rows="4" @bind="evento.Descricao"></textarea>
+                    </div>
+                </div>
+
                 @if (!string.IsNullOrEmpty(mensagemErro))
                 {
                     <div class="alert alert-danger">
@@ -29,121 +65,209 @@
                     </div>
                 }
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Nome do Evento:</label>
-                            <input @bind="evento.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")" 
-                                   placeholder="Digite o nome do evento" />
-                            @if (erros.ContainsKey("Nome"))
-                            {
-                                <div class="invalid-feedback">@erros["Nome"]</div>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Data:</label>
-                            <input @bind="evento.Data" type="datetime-local" 
-                                   class="form-control @(erros.ContainsKey("Data") ? "is-invalid" : "")" />
-                            @if (erros.ContainsKey("Data"))
-                            {
-                                <div class="invalid-feedback">@erros["Data"]</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Local:</label>
-                            <input @bind="evento.Local" class="form-control @(erros.ContainsKey("Local") ? "is-invalid" : "")" 
-                                   placeholder="Digite o local do evento" />
-                            @if (erros.ContainsKey("Local"))
-                            {
-                                <div class="invalid-feedback">@erros["Local"]</div>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Distância (km):</label>
-                            <input @bind="evento.Distancia" type="number" step="0.1"
-                                   class="form-control @(erros.ContainsKey("Distancia") ? "is-invalid" : "")" 
-                                   placeholder="Ex: 5, 10, 21.1" />
-                            @if (erros.ContainsKey("Distancia"))
-                            {
-                                <div class="invalid-feedback">@erros["Distancia"]</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Tipo de Corrida:</label>
-                            <select @bind="evento.Tipo" class="form-control @(erros.ContainsKey("Tipo") ? "is-invalid" : "")">
-                                <option value="">Selecione o tipo</option>
-                                <option value="5km">5km</option>
-                                <option value="10km">10km</option>
-                                <option value="Meia Maratona">Meia Maratona (21km)</option>
-                                <option value="Maratona">Maratona (42km)</option>
-                            </select>
-                            @if (erros.ContainsKey("Tipo"))
-                            {
-                                <div class="invalid-feedback">@erros["Tipo"]</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="font-weight-bold">Descrição:</label>
-                            <textarea @bind="evento.Descricao" class="form-control @(erros.ContainsKey("Descricao") ? "is-invalid" : "")" 
-                                      rows="3" placeholder="Descreva o evento"></textarea>
-                            @if (erros.ContainsKey("Descricao"))
-                            {
-                                <div class="invalid-feedback">@erros["Descricao"]</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 d-flex">
-                    <button class="btn btn-primary mr-2" @onclick="AtualizarEvento" disabled="@salvando">
+                <div class="action-buttons">
+                    <button type="button" class="action-btn" @onclick="HandleSubmit" disabled="@salvando">
                         @if (salvando)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span class="ml-2">Atualizando...</span>
+                            <span>Salvando...</span>
                         }
                         else
                         {
-                            <i class="fas fa-save"></i> @(erros.Count > 0 ? "Corrija os erros" : "Atualizar")
+                            <span class="btn-icon">💾</span>
+                            <span class="btn-text">Salvar Alterações</span>
                         }
                     </button>
-                    <a href="/eventos" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Cancelar
+                    <a href="/eventos" class="action-btn cancel-btn">
+                        <span class="btn-icon">❌</span>
+                        <span class="btn-text">Cancelar</span>
                     </a>
                 </div>
-            }
-        </div>
+            </form>
+        }
     </div>
 </div>
+
+<style>
+
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        max-width: 900px;
+        width: 100%;
+    }
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .form-container {
+        margin-top: 1.5rem;
+    }
+
+    .form-row {
+        display: flex;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    textarea.form-input {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .action-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        text-decoration: none;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(251, 140, 0, 0.3);
+        border: none;
+        cursor: pointer;
+        min-width: 180px;
+    }
+
+        .action-btn:hover {
+            background-color: white;
+            color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(251, 140, 0, 0.4);
+            border: 2px solid var(--secondary-color);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+        .cancel-btn:hover {
+            background-color: white;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+    .btn-icon {
+        font-size: 1.5rem;
+        margin-right: 0.8rem;
+    }
+
+    .btn-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid var(--primary-color);
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    .alert-danger {
+        padding: 1rem;
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 8px;
+        border: 1px solid #f5c6cb;
+        margin-bottom: 1rem;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 
 @code {
     [Parameter]
     public int Id { get; set; }
 
     private Evento evento;
-    private bool salvando = false;
     private string mensagemErro = string.Empty;
-    private Dictionary<string, string> erros = new();
+    private bool salvando = false;
 
     protected override async Task OnInitializedAsync()
+    {
+        await CarregarEvento();
+    }
+
+    private async Task CarregarEvento()
     {
         try
         {
@@ -151,6 +275,7 @@
             if (evento == null)
             {
                 mensagemErro = "Evento não encontrado.";
+                Navigation.NavigateTo("/eventos");
             }
         }
         catch (Exception ex)
@@ -159,75 +284,37 @@
         }
     }
 
-    private async Task AtualizarEvento()
+    private async Task HandleSubmit()
     {
         salvando = true;
-        erros.Clear();
         mensagemErro = string.Empty;
-        
-        // Validações
-        ValidarCampos();
 
-        if (erros.Count == 0)
+        try
         {
-            try
+
+            if (string.IsNullOrWhiteSpace(evento.Nome))
             {
-                await EventoController.Atualizar(evento);
-                Navigation.NavigateTo("/eventos");
+                mensagemErro = "O nome do evento é obrigatório.";
+                return;
             }
-            catch (Exception ex)
+
+            if (evento.Data == null || evento.Data < DateTime.Today)
             {
-                mensagemErro = $"Erro ao atualizar evento: {ex.Message}";
-                Console.WriteLine(mensagemErro);
+                mensagemErro = "A data do evento deve ser no futuro.";
+                return;
             }
-        }
-        else
-        {
-            mensagemErro = "Corrija os erros antes de atualizar.";
-        }
 
-        salvando = false;
-        StateHasChanged();
-    }
-
-    private void ValidarCampos()
-    {
-        // Validação do Nome
-        if (string.IsNullOrWhiteSpace(evento.Nome))
-        {
-            erros["Nome"] = "O nome do evento é obrigatório.";
+            await EventoController.Atualizar(evento);
+            await JSRuntime.InvokeVoidAsync("alert", "Evento atualizado com sucesso!");
+            Navigation.NavigateTo("/eventos");
         }
-        else if (evento.Nome.Length < 5)
+        catch (Exception ex)
         {
-            erros["Nome"] = "O nome deve ter pelo menos 5 caracteres.";
+            mensagemErro = $"Erro ao atualizar evento: {ex.Message}";
         }
-
-        // Validação da Data
-        if (evento.Data == default)
+        finally
         {
-            erros["Data"] = "A data do evento é obrigatória.";
-        }
-        else if (evento.Data < DateTime.Now)
-        {
-            erros["Data"] = "A data do evento deve ser futura.";
-        }
-
-        // Validação do Local
-        if (string.IsNullOrWhiteSpace(evento.Local))
-        {
-            erros["Local"] = "O local do evento é obrigatório.";
-        }
-
-        // Validação da Distância
-        if (evento.Distancia <= 0)
-        {
-            erros["Distancia"] = "A distância deve ser maior que zero.";
-        }
-
-        // Validação do Tipo
-        if (string.IsNullOrWhiteSpace(evento.Tipo))
-        {
-            erros["Tipo"] = "O tipo de corrida é obrigatório.";
+            salvando = false;
         }
     }
 }

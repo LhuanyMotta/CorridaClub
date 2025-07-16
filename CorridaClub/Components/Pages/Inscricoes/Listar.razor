@@ -7,183 +7,460 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0"><i class="fas fa-file-signature mr-2"></i> LISTA DE INSCRIÇÕES</h1>
-        <a href="/inscricoes/criar" class="btn btn-primary">
-            <i class="fas fa-plus mr-2"></i> Nova Inscrição
-        </a>
-    </div>
+<div class="home-container">
+    <div class="home-card">
+        <div class="header">
+            <h1>Lista de <span class="highlight">Inscrições</span></h1>
+            <p class="subtitle">Gerencie as inscrições do sistema</p>
+        </div>
 
-    <!-- Filtros -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Filtrar por Evento:</label>
-                        <select @bind="filtroEventoId" class="form-control">
-                            <option value="0">Todos os Eventos</option>
-                            @foreach (var evento in eventosDisponiveis)
-                            {
-                                <option value="@evento.Id">@evento.Nome</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Filtrar por Status:</label>
-                        <select @bind="filtroStatus" @bind:event="onchange" class="form-control">
-                            <option value="">Todos</option>
-                            <option value="Confirmada">Confirmada</option>
-                            <option value="Cancelada">Cancelada</option>
-                            <option value="Pendente">Pendente</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Buscar Participante:</label>
-                        <div class="input-group">
-                        <input @bind="filtroParticipante" 
-                            class="form-control" 
-                            placeholder="Nome ou email" 
-                            @onkeyup="@(e => { if (e.Key == "Enter") AplicarFiltros(); })" />
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" @onclick="AplicarFiltros" title="Buscar">
-                                <i class="fas fa-search mr-1"></i> Buscar
-                            </button>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-            </div>
+        <div class="action-buttons">
+            <a href="/inscricoes/criar" class="action-btn">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">Nova Inscrição</span>
+            </a>
         </div>
-    </div>
 
-    @if (carregando)
-    {
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Carregando...</span>
+        <!-- Filtros -->
+        <div class="filters-container">
+            <div class="filter-group">
+                <label>Filtrar por Evento:</label>
+                <select @bind="filtroEventoId" class="filter-select">
+                    <option value="0">Todos os Eventos</option>
+                    @foreach (var evento in eventosDisponiveis)
+                    {
+                        <option value="@evento.Id">@evento.Nome</option>
+                    }
+                </select>
             </div>
-            <p class="mt-2">Carregando inscrições...</p>
-        </div>
-    }
-    else if (!inscricoesFiltradas.Any())
-    {
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle mr-2"></i> Nenhuma inscrição encontrada com os filtros atuais.
-        </div>
-    }
-    else
-    {
-        <div class="card shadow">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover mb-0">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Evento</th>
-                                <th>Data Evento</th>
-                                <th>Participante</th>
-                                <th>Tamanho Camiseta</th>
-                                <th>Data Inscrição</th>
-                                <th>Status</th>
-                                <th class="text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var inscricao in inscricoesFiltradas)
-                            {
-                                <tr>
-                                    <td>@inscricao.Evento?.Nome</td>
-                                    <td>@inscricao.Evento?.Data?.ToString("dd/MM/yyyy")</td>
-                                    <td>@inscricao.Usuario?.Nome <small class="text-muted d-block">@inscricao.Usuario?.Email</small></td>
-                                    <td>@inscricao.TamanhoCamiseta</td>
-                                    <td>@(inscricao.DataInscricao is DateTime dt ? dt.ToString("dd/MM/yyyy") : "")</td>
-                                    <td>
-                                        <span class="badge @GetBadgeClass(inscricao.Status)" style="font-size: 0.9rem; padding: 0.35em 0.65em;">
-                                            @GetStatusText(inscricao.Status)
-                                        </span>
-                                    </td>
-                                    <td class="text-right">
-                                        <div class="btn-group" role="group">
-                                            <a href="/inscricoes/detalhes/@inscricao.Id" class="btn btn-info btn-sm" title="Detalhes">
-                                                <i class="fas fa-eye mr-1"></i> Detalhes
-                                            </a>
-                                            @if (inscricao.Status != "Cancelada")
-                                            {
-                                                <button @onclick="@(() => ConfirmarCancelamento(inscricao.Id))" 
-                                                        class="btn btn-danger btn-sm" 
-                                                        title="Cancelar Inscrição">
-                                                    <i class="fas fa-ban mr-1"></i> Cancelar
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button class="btn btn-secondary btn-sm" disabled title="Inscrição já cancelada">
-                                                    <i class="fas fa-ban mr-1"></i> Cancelada
-                                                </button>
-                                            }
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+            
+            <div class="filter-group">
+                <label>Filtrar por Status:</label>
+                <select @bind="filtroStatus" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="Confirmada">Confirmada</option>
+                    <option value="Cancelada">Cancelada</option>
+                    <option value="Pendente">Pendente</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Filtrar por Participante:</label>
+                <div class="filter-input">
+                    <input @bind="filtroParticipante" 
+                           class="filter-input-field"
+                           placeholder="Nome ou email"
+                           @onkeyup="@(e => { if (e.Key == "Enter") AplicarFiltros(); })" />
+                    <button @onclick="AplicarFiltros" class="filter-button">
+                        <span class="btn-icon">🔍</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Paginação -->
-        @if (totalPaginas > 1)
+        @if (carregando)
         {
-            <div class="d-flex justify-content-center mt-3">
-                <nav>
-                    <ul class="pagination">
-                        <li class="page-item @(paginaAtual == 1 ? "disabled" : "")">
-                            <button class="page-link" @onclick="@(() => MudarPagina(1))">
-                                <i class="fas fa-angle-double-left"></i>
-                            </button>
-                        </li>
-                        <li class="page-item @(paginaAtual == 1 ? "disabled" : "")">
-                            <button class="page-link" @onclick="@(() => MudarPagina(paginaAtual - 1))">
-                                <i class="fas fa-angle-left"></i>
-                            </button>
-                        </li>
-
-                        @for (int i = Math.Max(1, paginaAtual - 2); i <= Math.Min(totalPaginas, paginaAtual + 2); i++)
-                        {
-                            <li class="page-item @(i == paginaAtual ? "active" : "")">
-                                <button class="page-link" @onclick="@(() => MudarPagina(i))">@i</button>
-                            </li>
-                        }
-
-                        <li class="page-item @(paginaAtual == totalPaginas ? "disabled" : "")">
-                            <button class="page-link" @onclick="@(() => MudarPagina(paginaAtual + 1))">
-                                <i class="fas fa-angle-right"></i>
-                            </button>
-                        </li>
-                        <li class="page-item @(paginaAtual == totalPaginas ? "disabled" : "")">
-                            <button class="page-link" @onclick="@(() => MudarPagina(totalPaginas))">
-                                <i class="fas fa-angle-double-right"></i>
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Carregando inscrições...</p>
             </div>
         }
+        else if (!inscricoesFiltradas.Any())
+        {
+            <div class="empty-state">
+                <span class="btn-icon">📋</span>
+                <p>Nenhuma inscrição encontrada com os filtros atuais.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-container">
+                <table class="user-table">
+    <thead>
+        <tr>
+            <th>Evento</th>
+            <th>Participante</th>
+            <th>Data Inscrição</th>
+            <th>Status</th>
+            <th>Camiseta</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var inscricao in GetInscricoesPagina())
+        {
+            <tr class="table-row">
+                <td class="evento-cell">@inscricao.Evento?.Nome</td>
+                <td class="participante-cell">
+                    <div class="participant-info">
+                        <div class="participant-name">@inscricao.Usuario?.Nome</div>
+                        <div class="participant-email">@inscricao.Usuario?.Email</div>
+                    </div>
+                </td>
+                <td class="data-cell">@inscricao.DataInscricao?.ToString("dd/MM/yyyy")</td>
+                <td class="status-cell">
+                    <span class="status-badge @GetStatusBadgeClass(inscricao.Status)">
+                        @GetStatusText(inscricao.Status)
+                    </span>
+                </td>
+                <td class="camiseta-cell">@inscricao.TamanhoCamiseta</td>
+                <td class="actions-cell">
+                    <div class="actions">
+                        <a href="/inscricoes/detalhes/@inscricao.Id" class="table-btn info">
+                            <span class="btn-icon">👁️</span>
+                        </a>
+                        @if (inscricao.Status != "Cancelada")
+                        {
+                            <button @onclick="@(async () => await ConfirmarCancelamento(inscricao.Id))"
+                                    class="table-btn danger">
+                                <span class="btn-icon">✖️</span>
+                            </button>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+            </div>
+
+            @if (totalPaginas > 1)
+            {
+                <div class="pagination-container">
+                    <button @onclick="@(() => MudarPagina(1))" 
+                            disabled="@(paginaAtual == 1)"
+                            class="pagination-button">
+                        <span class="btn-icon">⏮️</span>
+                    </button>
+                    
+                    <button @onclick="@(() => MudarPagina(paginaAtual - 1))" 
+                            disabled="@(paginaAtual == 1)"
+                            class="pagination-button">
+                        <span class="btn-icon">◀️</span>
+                    </button>
+                    
+                    @for (int i = Math.Max(1, paginaAtual - 2); i <= Math.Min(totalPaginas, paginaAtual + 2); i++)
+                    {
+                        <button @onclick="@(() => MudarPagina(i))" 
+                                class="pagination-button @(i == paginaAtual ? "active" : "")">
+                            @i
+                        </button>
+                    }
+                    
+                    <button @onclick="@(() => MudarPagina(paginaAtual + 1))" 
+                            disabled="@(paginaAtual == totalPaginas)"
+                            class="pagination-button">
+                        <span class="btn-icon">▶️</span>
+                    </button>
+                    
+                    <button @onclick="@(() => MudarPagina(totalPaginas))" 
+                            disabled="@(paginaAtual == totalPaginas)"
+                            class="pagination-button">
+                        <span class="btn-icon">⏭️</span>
+                    </button>
+                </div>
+            }
+        }
+
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .home-container {
+        background-color: var(--background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
     }
 
-    @if (!string.IsNullOrEmpty(mensagemErro))
-    {
-        <div class="alert alert-danger mt-3">
-            <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
-        </div>
+    .home-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        max-width: 1200px;
+        width: 100%;
     }
-</div>
+
+    .header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 2rem;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+        .action-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+    .filters-container {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .filter-select {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        min-width: 200px;
+    }
+
+    .filter-input {
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-input-field {
+        padding: 0.5rem 1rem;
+        border-radius: 8px 0 0 8px;
+        border: 1px solid #ddd;
+        border-right: none;
+        min-width: 200px;
+    }
+
+    .filter-button {
+        padding: 0.5rem 1rem;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .filter-button:hover {
+            background-color: var(--secondary-color);
+        }
+
+    .table-container {
+        overflow-x: auto;
+        margin-top: 1.5rem;
+    }
+
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .user-table th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .user-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        .user-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+    .participant-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .participant-name {
+        font-weight: 500;
+    }
+
+    .participant-email {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .table-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .table-btn:hover {
+            transform: scale(1.1);
+        }
+
+    .info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        color: var(--text-dark);
+    }
+
+        .empty-state .btn-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid var(--primary-color);
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .badge-confirmada {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-cancelada {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-pendente {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .pagination-button {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ddd;
+        background-color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .pagination-button:hover:not(:disabled) {
+            background-color: #f1f1f1;
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+    .alert-danger {
+        padding: 1rem;
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 8px;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 
 @code {
     private List<Inscricao> inscricoes = new();
@@ -191,6 +468,7 @@
     private List<Evento> eventosDisponiveis = new();
     private bool carregando = true;
     private string mensagemErro = string.Empty;
+    private bool cancelando = false;
     
     // Filtros
     private int filtroEventoId = 0;
@@ -276,9 +554,9 @@
 
     private async Task CancelarInscricao(int inscricaoId)
     {
+        cancelando = true;
         try
         {
-            carregando = true;
             await InscricaoController.CancelarInscricao(inscricaoId);
             await CarregarDados();
             AplicarFiltros();
@@ -290,18 +568,18 @@
         }
         finally
         {
-            carregando = false;
+            cancelando = false;
         }
     }
 
-    private string GetBadgeClass(string status)
+    private string GetStatusBadgeClass(string status)
     {
         return status switch
         {
-            "Confirmada" => "badge bg-success text-dark",
-            "Cancelada" => "badge bg-danger text-dark",
-            "Pendente" => "badge bg-warning text-dark",
-            _ => "badge bg-secondary text-dark"
+            "Confirmada" => "badge-confirmada",
+            "Cancelada" => "badge-cancelada",
+            "Pendente" => "badge-pendente",
+            _ => ""
         };
     }
 
@@ -315,9 +593,4 @@
             _ => status?.ToUpper() ?? "INDEFINIDO"
         };
     }
-
-    
-
-    
-
 }

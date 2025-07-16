@@ -125,6 +125,23 @@
         margin-bottom: 2rem;
     }
 
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+        .action-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
     .table-container {
         overflow-x: auto;
         margin-top: 1.5rem;
@@ -258,9 +275,9 @@
         var usuario = usuarios.FirstOrDefault(u => u.Id == id);
         if (usuario == null) return;
 
-        var confirmado = await JSRuntime.InvokeAsync<bool>("confirm", 
+        var confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
             $"Tem certeza que deseja remover o usuário {usuario.Nome}? Esta ação não pode ser desfeita.");
-        
+
         if (confirmado)
         {
             await RemoverUsuario(id);

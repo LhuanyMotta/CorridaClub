@@ -45,9 +45,18 @@ namespace CorridaClub.Controllers
 
         public async Task Atualizar(Evento evento)
         {
-            
             _context.Eventos.Update(evento);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task Remover(int id)
+        {
+            var evento = await _context.Eventos.FindAsync(id);
+            if (evento != null)
+            {
+                _context.Eventos.Remove(evento);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
