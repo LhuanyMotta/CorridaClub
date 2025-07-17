@@ -5,7 +5,7 @@
 
 ########### ->>>>>>>>>>>> Configuração do meu (Lucas) bd:
 appsettinges.Development.json
-appsettings.json
+
 
 # User-specific files
 *.rsuser
