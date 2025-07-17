@@ -93,7 +93,7 @@ CorridaClub/
 
 ## 📷 Imagens do Sistema
 
-> 💡 *Exemplo da tela inicial do sistema CorridaClub:*
+> 💡 *Demonstrativo do sistema CorridaClub:*
 
 ![Tela Inicial](imagens/bemvindo.png)
 ![Tela de Login](imagens/login.png)
