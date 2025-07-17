@@ -19,8 +19,8 @@
 
         @if (!usuarioLogado)
         {
-            <div class="action-buttons">
-                <a href="/login" class="action-btn">
+            <div class="action-buttons-solo">
+                <a href="/login" class="action-btn-login">
                     <span class="btn-icon">🔑</span>
                     <span class="btn-text">Fazer Login</span>
                 </a>
@@ -135,6 +135,12 @@
         gap: 2rem;
     }
 
+    .action-buttons-solo {
+        @* display: grid;
+        grid-template-columns: repeat(3, 1fr); *@
+        gap: 2rem;
+    }
+
     .action-btn {
         background-color: #FB8C00;
         color: white;
@@ -148,6 +154,23 @@
         transition: all 0.3s ease;
         box-shadow: 0 6px 15px rgba(251, 140, 0, 0.3);
         border: 2px solid transparent;
+    }
+
+    .action-btn-login {
+        background-color: #FB8C00;
+        color: white;
+        text-decoration: none;
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(251, 140, 0, 0.3);
+        border: 2px solid transparent;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
     }
 
         .action-btn:hover {

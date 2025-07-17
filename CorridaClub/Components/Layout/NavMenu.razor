@@ -56,6 +56,11 @@
                         <span class="nav-icon">🔑</span> Login
                     </a>
                 </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/cadastro" active-class="active">
+                    <span class="nav-icon">📝</span> Cadastre-se
+                </a>
+                </li>
             }
         </ul>
     </div>
@@ -93,12 +98,11 @@
 <style>
     .sidebar {
         width: 280px;
-    using Microsoft.AspNetCore.Components.Authorization;
-#line default
-    position: sticky;
+        using Microsoft.AspNetCore.Components.Authorization;
+        #line default position: sticky;
         top: 0;
         background-color: white;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
         border-right: 1px solid #e0e0e0;
     }
 
@@ -146,22 +150,23 @@
         padding: 14px 18px;
         border-radius: 8px;
         transition: all 0.2s;
-        color: var(--text-dark);
+        color: var(--text-dark) !important;
         text-decoration: none;
         font-weight: 500;
         font-size: 1.05rem;
     }
 
-        .nav-link:hover {
-            background-color: var(--light-orange);
-            color: var(--text-dark) !important; /* Força a cor do texto a permanecer escura */
-        }
+    .nav-link:hover {
+        background-color: var(--light-orange);
+        color: var(--primary-color) !important;
+        /* Força a cor do texto a permanecer escura */
+    }
 
-        .nav-link.active {
-            background-color: var(--secondary-color);
-            color: white !important;
-            font-weight: 600;
-        }
+    .nav-link.active {
+        background-color: var(--secondary-color);
+        color: white !important;
+        font-weight: 600;
+    }
 
     .nav-icon {
         font-size: 1.3rem;
