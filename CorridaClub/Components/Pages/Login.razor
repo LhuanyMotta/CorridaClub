@@ -1,0 +1,202 @@
+@page "/login"
+@rendermode InteractiveServer
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@using CorridaClub.Providers
+@inject UsuarioController UsuarioController
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>Bem-vindo ao <span class="highlight">CorridaClub</span></h1>
+            <p class="subtitle">Faça login para acessar o sistema</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(mensagemErro))
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+            </div>
+        }
+
+        <div class="login-form">
+            <div class="form-group">
+                <label>Email:</label>
+                <input @bind="email" class="form-control" placeholder="Digite seu email" />
+            </div>
+
+            <div class="form-group">
+                <label>Senha:</label>
+                <input @bind="senha" type="password" class="form-control" placeholder="Digite sua senha" />
+            </div>
+
+            <button class="login-btn" @onclick="FazerLogin">
+                @if (carregando)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>Entrando...</span>
+                }
+                else
+                {
+                    <span>Entrar</span>
+                }
+            </button>
+
+            <div class="login-footer">
+                <p>Não tem uma conta? <a href="/cadastro">Cadastre-se</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--background);
+        padding: 2rem;
+    }
+
+    .login-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(230, 81, 0, 0.15);
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .login-header h1 {
+        color: var(--primary-color);
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .highlight {
+        color: var(--secondary-color);
+        font-weight: 800;
+    }
+
+    .subtitle {
+        color: var(--text-dark);
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .login-form {
+        margin-top: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .login-btn {
+        width: 100%;
+        background-color: var(--secondary-color);
+        color: white;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 1rem;
+    }
+
+    .login-btn:hover {
+        background-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .login-footer {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+    }
+
+    .login-footer a {
+        color: var(--secondary-color);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .alert {
+        padding: 1rem;
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f5c6cb;
+    }
+</style>
+
+@code {
+    private string email = string.Empty;
+    private string senha = string.Empty;
+    private bool carregando = false;
+    private string mensagemErro = string.Empty;
+
+    private async Task FazerLogin()
+    {
+        carregando = true;
+        mensagemErro = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(senha))
+        {
+            mensagemErro = "Email e senha são obrigatórios.";
+            carregando = false;
+            return;
+        }
+
+        try
+        {
+            var usuarios = await UsuarioController.ListarUsuarios();
+            var usuario = usuarios.FirstOrDefault(u => u.Email == email && u.Senha == senha);
+
+            if (usuario != null)
+            {
+                await AuthStateProvider.UpdateAuthenticationState(usuario.Id, usuario.Nome ?? "");
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                mensagemErro = "Email ou senha incorretos.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao fazer login: {ex.Message}";
+        }
+
+        carregando = false;
+    }
+}

@@ -1,0 +1,272 @@
+@page "/cadastro"
+@rendermode InteractiveServer
+@using CorridaClub.Controllers
+@using CorridaClub.Models
+@inject UsuarioController UsuarioController
+@inject NavigationManager Navigation
+
+<div class="form-container">
+    <div class="header">
+        <h1>Cadastrar <span class="highlight">Nova Conta</span></h1>
+        <p class="subtitle">Preencha os dados abaixo para criar uma nova conta</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensagemErro))
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle mr-2"></i> @mensagemErro
+        </div>
+    }
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Nome Completo:</label>
+            <input @bind="novoUsuario.Nome" class="form-control @(erros.ContainsKey("Nome") ? "is-invalid" : "")"
+                   placeholder="Digite o nome completo" />
+            @if (erros.ContainsKey("Nome"))
+            {
+                <div class="invalid-feedback">@erros["Nome"]</div>
+            }
+        </div>
+
+        <div class="form-group">
+            <label>Email:</label>
+            <input @bind="novoUsuario.Email" class="form-control @(erros.ContainsKey("Email") ? "is-invalid" : "")"
+                   placeholder="Digite o email" />
+            @if (erros.ContainsKey("Email"))
+            {
+                <div class="invalid-feedback">@erros["Email"]</div>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Senha:</label>
+            <input @bind="novoUsuario.Senha" type="password"
+                   class="form-control @(erros.ContainsKey("Senha") ? "is-invalid" : "")"
+                   placeholder="Mínimo 8 caracteres" />
+            @if (erros.ContainsKey("Senha"))
+            {
+                <div class="invalid-feedback">@erros["Senha"]</div>
+            }
+        </div>
+
+        <div class="form-group">
+            <label>Confirmar Senha:</label>
+            <input @bind="confirmacaoSenha" type="password"
+                   class="form-control @(erros.ContainsKey("ConfirmacaoSenha") ? "is-invalid" : "")"
+                   placeholder="Confirme a senha" />
+            @if (erros.ContainsKey("ConfirmacaoSenha"))
+            {
+                <div class="invalid-feedback">@erros["ConfirmacaoSenha"]</div>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Telefone:</label>
+            <input @bind="novoUsuario.Telefone" @oninput="FormatarTelefone"
+                   class="form-control @(erros.ContainsKey("Telefone") ? "is-invalid" : "")"
+                   placeholder="(00) 00000-0000" />
+            @if (erros.ContainsKey("Telefone"))
+            {
+                <div class="invalid-feedback">@erros["Telefone"]</div>
+            }
+        </div>
+
+        <div class="form-group">
+            <label>Data de Nascimento:</label>
+            <input @bind="novoUsuario.DataNascimento" type="date"
+                   class="form-control @(erros.ContainsKey("DataNascimento") ? "is-invalid" : "")"
+                   max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            @if (erros.ContainsKey("DataNascimento"))
+            {
+                <div class="invalid-feedback">@erros["DataNascimento"]</div>
+            }
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Gênero:</label>
+            <select @bind="novoUsuario.Genero" class="form-control @(erros.ContainsKey("Genero") ? "is-invalid" : "")">
+                <option value="">Selecione...</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outro">Outro</option>
+            </select>
+            @if (erros.ContainsKey("Genero"))
+            {
+                <div class="invalid-feedback">@erros["Genero"]</div>
+            }
+        </div>
+
+        <div class="form-group">
+            <label>Tipo de Membro:</label>
+            <select @bind="novoUsuario.TipoMembro" class="form-control @(erros.ContainsKey("TipoMembro") ? "is-invalid" : "")">
+                <option value="">Selecione...</option>
+                <option value="Atleta">Atleta</option>
+                <option value="Organizador">Organizador</option>
+            </select>
+            @if (erros.ContainsKey("TipoMembro"))
+            {
+                <div class="invalid-feedback">@erros["TipoMembro"]</div>
+            }
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        @if (!cadastroSucesso)
+        {
+            <button class="action-btn" @onclick="Cadastrar" disabled="@salvando">
+                @if (salvando)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>Cadastrando...</span>
+                }
+                else
+                {
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text">@(erros.Count > 0 ? "Corrija os erros" : "Cadastrar")</span>
+                }
+            </button>
+            <a href="/login" class="action-btn cancel-btn">
+                <span class="btn-icon">↩️</span>
+                <span class="btn-text">Voltar para Login</span>
+            </a>
+        }
+        else
+        {
+            <div class="success-message">
+                <span class="btn-icon">✅</span>
+                <div>
+                    <h4>Sucesso!</h4>
+                    <p>Conta criada com sucesso. <a href="/login">Faça login aqui</a>.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private Usuario novoUsuario = new Usuario();
+    private string confirmacaoSenha = string.Empty;
+    private bool cadastroSucesso = false;
+    private bool salvando = false;
+    private string mensagemErro = string.Empty;
+    private Dictionary<string, string> erros = new Dictionary<string, string>();
+
+    private async Task Cadastrar()
+    {
+        salvando = true;
+        erros.Clear();
+        mensagemErro = string.Empty;
+        
+        ValidarCampos();
+
+        if (erros.Count == 0)
+        {
+            try
+            {
+                // Define tipo padrão se não selecionado
+                novoUsuario.TipoMembro ??= "Atleta";
+                
+                await UsuarioController.Adicionar(novoUsuario);
+                cadastroSucesso = true;
+            }
+            catch (Exception ex)
+            {
+                mensagemErro = $"Erro ao cadastrar: {ex.Message}";
+            }
+        }
+
+        salvando = false;
+    }
+
+    private void ValidarCampos()
+    {
+        if (string.IsNullOrWhiteSpace(novoUsuario.Nome))
+        {
+            erros["Nome"] = "O nome é obrigatório.";
+        }
+
+        if (string.IsNullOrWhiteSpace(novoUsuario.Email) || !novoUsuario.Email.Contains("@"))
+        {
+            erros["Email"] = "Informe um email válido.";
+        }
+
+        if (string.IsNullOrWhiteSpace(novoUsuario.Senha) || novoUsuario.Senha.Length < 8)
+        {
+            erros["Senha"] = "A senha deve ter pelo menos 8 caracteres.";
+        }
+
+        if (novoUsuario.Senha != confirmacaoSenha)
+        {
+            erros["ConfirmacaoSenha"] = "As senhas não coincidem.";
+        }
+
+        if (string.IsNullOrWhiteSpace(novoUsuario.Telefone))
+        {
+            erros["Telefone"] = "O telefone é obrigatório.";
+        }
+
+        if (novoUsuario.DataNascimento == default || novoUsuario.DataNascimento > DateTime.Now.AddYears(-12))
+        {
+            erros["DataNascimento"] = "Data de nascimento inválida ou idade mínima não atingida.";
+        }
+
+        if (string.IsNullOrWhiteSpace(novoUsuario.Genero))
+        {
+            erros["Genero"] = "O gênero é obrigatório.";
+        }
+    }
+
+    private void FormatarTelefone(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString() ?? string.Empty;
+        var digits = new string(input.Where(char.IsDigit).ToArray());
+        
+        if (digits.Length > 11) digits = digits[..11];
+        
+        novoUsuario.Telefone = digits.Length switch
+        {
+            > 7 => $"({digits[..2]}) {digits[2..7]}-{digits[7..]}",
+            > 2 => $"({digits[..2]}) {digits[2..]}",
+            > 0 => $"({digits}",
+            _ => ""
+        };
+    }
+}
+
+<style>.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Melhorias no formulário */
+.login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-form .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+}</style>

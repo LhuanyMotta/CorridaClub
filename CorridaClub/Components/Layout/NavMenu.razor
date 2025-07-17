@@ -1,4 +1,12 @@
-﻿<div class="sidebar">
+﻿@rendermode InteractiveServer
+@using CorridaClub.Providers
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedSessionStorage ProtectedSessionStore
+
+
+<div class="sidebar">
     <div class="navbar-top">
         <a class="navbar-brand" href="">
             <span class="app-icon">🏃‍♂️</span> CorridaClub
@@ -12,38 +20,89 @@
                     <span class="nav-icon">🏠</span> Home
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/usuarios" active-class="active">
-                    <span class="nav-icon">👥</span> Usuários
+
+            @if (usuarioLogado)
+            {
+                <li class="nav-item">
+                    <a class="nav-link" href="/usuarios" active-class="active">
+                        <span class="nav-icon">👥</span> Usuários
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/eventos" active-class="active">
+                        <span class="nav-icon">📅</span> Eventos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/inscricoes" active-class="active">
+                        <span class="nav-icon">📝</span> Inscrições
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pedidos" active-class="active">
+                        <span class="nav-icon">📦</span> Pedidos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" @onclick="Logout">
+                        <span class="nav-icon">🚪</span> Sair
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="nav-link" href="/login" active-class="active">
+                        <span class="nav-icon">🔑</span> Login
+                    </a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/cadastro" active-class="active">
+                    <span class="nav-icon">📝</span> Cadastre-se
                 </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/eventos" active-class="active">
-                    <span class="nav-icon">📅</span> Eventos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/inscricoes" active-class="active">
-                    <span class="nav-icon">📝</span> Inscrições
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/pedidos" active-class="active">
-                    <span class="nav-icon">📦</span> Pedidos
-                </a>
-            </li>
+                </li>
+            }
         </ul>
     </div>
 </div>
 
+
+
+
+@code {
+    private bool usuarioLogado = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            usuarioLogado = authState.User.Identity?.IsAuthenticated ?? false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao verificar autenticação: {ex.Message}");
+        }
+    }
+
+    private async Task Logout()
+    {
+        if (AuthStateProvider is CustomAuthStateProvider customProvider)
+        {
+            await customProvider.Logout();
+        }
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}
+
 <style>
     .sidebar {
         width: 280px;
-        height: 100vh;
-        position: sticky;
+        using Microsoft.AspNetCore.Components.Authorization;
+        #line default position: sticky;
         top: 0;
         background-color: white;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
         border-right: 1px solid #e0e0e0;
     }
 
@@ -91,22 +150,23 @@
         padding: 14px 18px;
         border-radius: 8px;
         transition: all 0.2s;
-        color: var(--text-dark);
+        color: var(--text-dark) !important;
         text-decoration: none;
         font-weight: 500;
         font-size: 1.05rem;
     }
 
-        .nav-link:hover {
-            background-color: var(--light-orange);
-            color: var(--text-dark) !important; /* Força a cor do texto a permanecer escura */
-        }
+    .nav-link:hover {
+        background-color: var(--light-orange);
+        color: var(--primary-color) !important;
+        /* Força a cor do texto a permanecer escura */
+    }
 
-        .nav-link.active {
-            background-color: var(--secondary-color);
-            color: white !important;
-            font-weight: 600;
-        }
+    .nav-link.active {
+        background-color: var(--secondary-color);
+        color: white !important;
+        font-weight: 600;
+    }
 
     .nav-icon {
         font-size: 1.3rem;

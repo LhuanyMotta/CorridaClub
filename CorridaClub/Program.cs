@@ -1,13 +1,25 @@
 using CorridaClub.Components;
 using CorridaClub.Contexto;
 using CorridaClub.Controllers;
+using CorridaClub.Providers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Registrar o CustomAuthStateProvider
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
+    provider.GetRequiredService<CustomAuthStateProvider>());
+
+// Registrar outros serviços necessários
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddProtectedBrowserStorage();
 
 // Configura��o do DbContext
 var connectionString = builder.Configuration.GetConnectionString("BaseConexaoMySql");

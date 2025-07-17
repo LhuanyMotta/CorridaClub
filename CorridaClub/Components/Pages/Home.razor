@@ -1,6 +1,12 @@
 ﻿@page "/"
 @page "/home"
 @inherits LayoutComponentBase
+@rendermode InteractiveServer
+@using CorridaClub.Controllers
+@using CorridaClub.Providers
+@using System.Security.Claims
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
 
 <PageTitle>Início</PageTitle>
 
@@ -10,6 +16,28 @@
             <h1>Bem-vindo ao <span class="highlight">CorridaClub</span></h1>
             <p class="subtitle">Gerencie corridas, usuários e muito mais de forma rápida e prática!</p>
         </div>
+
+        @if (!usuarioLogado)
+        {
+            <div class="action-buttons-solo">
+                <a href="/login" class="action-btn-login">
+                    <span class="btn-icon">🔑</span>
+                    <span class="btn-text">Fazer Login</span>
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="welcome-message">
+                <p>Olá, <strong>@usuarioNome</strong>!</p>
+                <div class="action-buttons">
+                    <a href="/eventos" class="action-btn">
+                        <span class="btn-icon">📅</span>
+                        <span class="btn-text">Ver Eventos</span>
+                    </a>
+                </div>
+            </div>
+        }
 
         <div class="action-buttons">
             <a class="action-btn" href="/usuarios">
@@ -40,6 +68,24 @@
         <a href="https://github.com/Lucas-S-Guilherme" target="_blank">Lucas Guilherme</a>
     </p>
 </div>
+
+@code {
+    private bool usuarioLogado = false;
+    private string usuarioNome = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        usuarioLogado = authState.User.Identity?.IsAuthenticated ?? false;
+        
+        if (usuarioLogado)
+        {
+            usuarioNome = authState.User.FindFirst(ClaimTypes.Name)?.Value ?? "Usuário";
+        }
+    }
+}
+
+
 
 <style>
     .home-container {
@@ -89,6 +135,12 @@
         gap: 2rem;
     }
 
+    .action-buttons-solo {
+        @* display: grid;
+        grid-template-columns: repeat(3, 1fr); *@
+        gap: 2rem;
+    }
+
     .action-btn {
         background-color: #FB8C00;
         color: white;
@@ -102,6 +154,23 @@
         transition: all 0.3s ease;
         box-shadow: 0 6px 15px rgba(251, 140, 0, 0.3);
         border: 2px solid transparent;
+    }
+
+    .action-btn-login {
+        background-color: #FB8C00;
+        color: white;
+        text-decoration: none;
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(251, 140, 0, 0.3);
+        border: 2px solid transparent;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
     }
 
         .action-btn:hover {
