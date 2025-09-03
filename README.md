@@ -108,13 +108,6 @@ Desenvolvido por: **Lhuany Motta** [🔗 GitHub](https://github.com/LhuanyMotta)
 
 ---
 
-## 🎥 Apresentação
-
-Assista à apresentação completa do projeto CorridaClub no Google Drive:  
-[📽️ Clique aqui para ver a apresentação](https://drive.google.com/file/d/1ZsbRNlH2UlCQ0nDxK-qDNLUhvof92hDK/view?usp=sharing)
-
----
-
 ## 📜 Licença
 
 Este projeto está licenciado sob a licença MIT.
